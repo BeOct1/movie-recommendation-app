@@ -13,18 +13,28 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://tangerine-lollipop-a24f3d.netlify.app',
+    'http://localhost:3000'
+  ]
+}));
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch((err) => {
-  console.error('MongoDB connection error:', err);
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('Connected to MongoDB');
+  }).catch((err) => {
+    console.error('MongoDB connection error:', err);
+  });
+
+// User model
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 });
+const User = mongoose.model('User', userSchema);
 
 // Registration route
 app.post('/api/auth/register', async (req, res) => {
