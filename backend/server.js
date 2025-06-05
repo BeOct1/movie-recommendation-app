@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+const moviesRouter = require('./routes/movies');
 
 // Load environment variables
 dotenv.config();
@@ -72,6 +74,23 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(500).json({ message: 'Server error.' });
   }
 });
+
+// Add a protected profile route
+app.get('/api/auth/profile', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+});
+
+app.use('/api/movies', moviesRouter);
 
 app.get('/', (req, res) => {
   res.send('Express server is running!');
