@@ -8,16 +8,28 @@ const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    console.log('Register request body:', req.body); // Log incoming data
+
+    const { username, password } = req.body;
+    if (!username || !password) {
+      console.log('Missing username or password');
+      return res.status(400).json({ message: 'All fields required' });
     }
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      console.log('Username already exists');
+      return res.status(409).json({ message: 'Username already exists' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
+    const user = new User({ username, password: hashedPassword });
     await user.save();
+
+    console.log('User registered successfully:', username);
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
+    console.error('Registration error:', err); // More detailed error logging
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -35,7 +35,7 @@ mongoose.connect(process.env.MONGODB_URI, {
     console.error('MongoDB connection error:', err);
   });
 
-const getHttpsConfig = require('./getHttpsConfig');
+//const getHttpsConfig = require('./getHttpsConfig');
 // Registration route
 app.post('/api/auth/register', async (req, res) => {
   try {
