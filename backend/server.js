@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const moviesRouter = require('./routes/movies');
 const favoritesRouter = require('./routes/favorites');
+const watchlistsRouter = require('./routes/watchlists');
 
 // Load environment variables
 dotenv.config();
@@ -96,6 +97,7 @@ app.get('/api/auth/profile', async (req, res) => {
 
 app.use('/api/movies', moviesRouter);
 app.use('/api/favorites', favoritesRouter);
+app.use('/api/watchlists', watchlistsRouter);
 
 app.get('/', (req, res) => {
   res.send('Express server is running!');
