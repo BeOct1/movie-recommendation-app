@@ -8,6 +8,7 @@ const User = require('./models/User');
 const moviesRouter = require('./routes/movies');
 const favoritesRouter = require('./routes/favorites');
 const watchlistsRouter = require('./routes/watchlists');
+const reviewsRouter = require('./routes/reviews');
 
 // Load environment variables
 dotenv.config();
@@ -98,11 +99,10 @@ app.get('/api/auth/profile', async (req, res) => {
 app.use('/api/movies', moviesRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/watchlists', watchlistsRouter);
+app.use('/api/reviews', reviewsRouter);
 
 app.get('/', (req, res) => {
   res.send('Express server is running!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.l
