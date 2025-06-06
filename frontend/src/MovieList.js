@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import MovieDetails from './MovieDetails';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
@@ -9,6 +10,7 @@ function MovieList() {
   const [sortBy, setSortBy] = useState('popularity.desc');
   const [voteAverageGte, setVoteAverageGte] = useState('');
   const [voteAverageLte, setVoteAverageLte] = useState('');
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   const fetchMovies = async () => {
     let url = `${API_URL}/api/movies/search?query=${encodeURIComponent(search)}`;
@@ -30,6 +32,10 @@ function MovieList() {
     e.preventDefault();
     fetchMovies();
   };
+
+  if (selectedMovie) {
+    return <MovieDetails movieId={selectedMovie} onBack={() => setSelectedMovie(null)} />;
+  }
 
   return (
     <div>
@@ -53,6 +59,7 @@ function MovieList() {
             {movie.vote_average && <> - Rating: {movie.vote_average}</>}
             {movie.overview && <div>{movie.overview}</div>}
             {movie.poster_path && <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{width: '100px'}} />}
+            <button onClick={() => setSelectedMovie(movie.id)}>Details</button>
           </li>
         ))}
       </ul>
