@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
-
 function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
@@ -14,13 +12,13 @@ function Login({ onLogin }) {
     e.preventDefault();
     setMessage('');
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (res.ok && data.token) {
+      if (res.ok) {
         localStorage.setItem('token', data.token);
         setMessage('Login successful!');
         if (onLogin) onLogin();
@@ -33,16 +31,18 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="container mt-4" style={{maxWidth: 400}}>
-      <h2 className="mb-3">Login</h2>
+    <div className="container mt-5" style={{ maxWidth: 400 }}>
+      <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <input name="email" type="email" className="form-control" placeholder="Email" value={form.email} onChange={handleChange} required />
+          <label>Email</label>
+          <input className="form-control" name="email" type="email" value={form.email} onChange={handleChange} required />
         </div>
         <div className="mb-3">
-          <input name="password" type="password" className="form-control" placeholder="Password" value={form.password} onChange={handleChange} required />
+          <label>Password</label>
+          <input className="form-control" name="password" type="password" value={form.password} onChange={handleChange} required />
         </div>
-        <button type="submit" className="btn btn-primary w-100">Login</button>
+        <button className="btn btn-primary w-100" type="submit">Login</button>
       </form>
       {message && <div className="alert alert-info mt-3">{message}</div>}
     </div>
