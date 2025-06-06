@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const moviesRouter = require('./routes/movies');
+const favoritesRouter = require('./routes/favorites');
 
 // Load environment variables
 dotenv.config();
@@ -94,6 +95,7 @@ app.get('/api/auth/profile', async (req, res) => {
 });
 
 app.use('/api/movies', moviesRouter);
+app.use('/api/favorites', favoritesRouter);
 
 app.get('/', (req, res) => {
   res.send('Express server is running!');
