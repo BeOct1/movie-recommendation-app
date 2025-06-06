@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const Movie = require('../models/Movie');
 const jwt = require('jsonwebtoken');
-const { searchMovies, getMovieDetails } = require('../services/tmdb');
+const axios = require('axios');
 
 const router = express.Router();
+
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 // Middleware to check JWT
 function authMiddleware(req, res, next) {
@@ -58,29 +60,37 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
   }
 });
 
-// TMDB Search Proxy
+// Search movies
 router.get('/search', async (req, res) => {
   try {
-    const { query, year, sort_by, vote_average_gte, vote_average_lte } = req.query;
-    const filters = {};
-    if (year) filters.year = year;
-    if (sort_by) filters.sort_by = sort_by;
-    if (vote_average_gte) filters['vote_average.gte'] = vote_average_gte;
-    if (vote_average_lte) filters['vote_average.lte'] = vote_average_lte;
-    const data = await searchMovies(query, filters);
-    res.json(data);
+    const { query, year, genre, sort_by } = req.query;
+    const params = {
+      api_key: TMDB_API_KEY,
+      query,
+      year,
+      with_genres: genre,
+      sort_by,
+      language: 'en-US',
+      include_adult: false,
+      page: 1,
+    };
+    const tmdbRes = await axios.get('https://api.themoviedb.org/3/search/movie', { params });
+    res.json(tmdbRes.data);
   } catch (err) {
-    res.status(500).json({ message: 'TMDB search failed', error: err.message });
+    res.status(500).json({ message: 'TMDB search error', error: err.message });
   }
 });
 
-// TMDB Movie Details Proxy
-router.get('/details/:id', async (req, res) => {
+// Movie details
+router.get('/:id', async (req, res) => {
   try {
-    const data = await getMovieDetails(req.params.id);
-    res.json(data);
+    const tmdbRes = await axios.get(
+      `https://api.themoviedb.org/3/movie/${req.params.id}`,
+      { params: { api_key: TMDB_API_KEY, language: 'en-US' } }
+    );
+    res.json(tmdbRes.data);
   } catch (err) {
-    res.status(500).json({ message: 'TMDB details failed', error: err.message });
+    res.status(500).json({ message: 'TMDB details error', error: err.message });
   }
 });
 
