@@ -32,15 +32,21 @@ function Register() {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
+    <div className="container mt-4" style={{maxWidth: 400}}>
+      <h2 className="mb-3">Register</h2>
       <form onSubmit={handleSubmit}>
-        <input name="username" placeholder="Username" value={form.username} onChange={handleChange} required />
-        <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
-        <button type="submit">Register</button>
+        <div className="mb-3">
+          <input name="username" className="form-control" placeholder="Username" value={form.username} onChange={handleChange} required />
+        </div>
+        <div className="mb-3">
+          <input name="email" type="email" className="form-control" placeholder="Email" value={form.email} onChange={handleChange} required />
+        </div>
+        <div className="mb-3">
+          <input name="password" type="password" className="form-control" placeholder="Password" value={form.password} onChange={handleChange} required />
+        </div>
+        <button type="submit" className="btn btn-primary w-100">Register</button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <div className="alert alert-info mt-3">{message}</div>}
     </div>
   );
 }

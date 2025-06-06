@@ -44,17 +44,27 @@ function AddMovie({ onMovieAdded }) {
   };
 
   return (
-    <div>
-      <h2>Add Movie</h2>
+    <div className="container mt-4" style={{maxWidth: 500}}>
+      <h2 className="mb-3">Add Movie</h2>
       <form onSubmit={handleSubmit}>
-        <input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
-        <input name="genre" placeholder="Genre" value={form.genre} onChange={handleChange} required />
-        <input name="year" placeholder="Year" value={form.year} onChange={handleChange} />
-        <input name="posterUrl" placeholder="Poster URL" value={form.posterUrl} onChange={handleChange} />
-        <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
-        <button type="submit">Add Movie</button>
+        <div className="mb-3">
+          <input name="title" className="form-control" placeholder="Title" value={form.title} onChange={handleChange} required />
+        </div>
+        <div className="mb-3">
+          <input name="genre" className="form-control" placeholder="Genre" value={form.genre} onChange={handleChange} required />
+        </div>
+        <div className="mb-3">
+          <input name="year" className="form-control" placeholder="Year" value={form.year} onChange={handleChange} />
+        </div>
+        <div className="mb-3">
+          <input name="posterUrl" className="form-control" placeholder="Poster URL" value={form.posterUrl} onChange={handleChange} />
+        </div>
+        <div className="mb-3">
+          <textarea name="description" className="form-control" placeholder="Description" value={form.description} onChange={handleChange} />
+        </div>
+        <button type="submit" className="btn btn-success w-100">Add Movie</button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <div className="alert alert-info mt-3">{message}</div>}
     </div>
   );
 }

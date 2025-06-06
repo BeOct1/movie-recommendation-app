@@ -24,18 +24,26 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>Movie Recommendation App</h1>
-        {!isAuthenticated && (
-          <>
-            <button onClick={() => setView('login')}>Login</button>
-            <button onClick={() => setView('register')}>Register</button>
-          </>
-        )}
-        {isAuthenticated && (
-          <button onClick={handleLogout}>Logout</button>
-        )}
+      <header className="bg-dark text-white p-3 mb-4">
+        <div className="container d-flex flex-wrap align-items-center justify-content-between">
+          <h1 className="mb-0">Movie Recommendation App</h1>
+          <nav>
+            {!isAuthenticated && (
+              <>
+                <button className="btn btn-outline-light me-2" onClick={() => setView('login')}>Login</button>
+                <button className="btn btn-outline-light" onClick={() => setView('register')}>Register</button>
+              </>
+            )}
+            {isAuthenticated && (
+              <>
+                <button className="btn btn-outline-light me-2" onClick={handleLogout}>Logout</button>
+                <button className="btn btn-outline-light me-2" onClick={() => setView('profile')}>Profile</button>
+                <button className="btn btn-outline-light me-2" onClick={() => setView('movies')}>Movies</button>
+                <button className="btn btn-outline-light" onClick={() => setView('recommendations')}>Recommendations</button>
+              </>
+            )}
+          </nav>
+        </div>
       </header>
       <main>
         {!isAuthenticated && view === 'login' && <Login onLogin={handleLogin} />}
@@ -43,17 +51,8 @@ function App() {
         {isAuthenticated && view === 'profile' && <Profile />}
         {isAuthenticated && view === 'movies' && <MovieList />}
         {isAuthenticated && view === 'recommendations' && <Recommendations />}
-        {isAuthenticated && view !== 'profile' && view !== 'movies' && view !== 'recommendations' && <div><h2>Welcome! You are logged in.</h2></div>}
+        {isAuthenticated && view !== 'profile' && view !== 'movies' && view !== 'recommendations' && <div className="container mt-4"><h2>Welcome! You are logged in.</h2></div>}
       </main>
-      <nav>
-        {isAuthenticated && (
-          <>
-            <button onClick={() => setView('profile')}>Profile</button>
-            <button onClick={() => setView('movies')}>Movies</button>
-            <button onClick={() => setView('recommendations')}>Recommendations</button>
-          </>
-        )}
-      </nav>
     </div>
   );
 }

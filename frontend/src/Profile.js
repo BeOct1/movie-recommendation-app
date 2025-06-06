@@ -27,14 +27,16 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  if (error) return <div>{error}</div>;
-  if (!user) return <div>Loading profile...</div>;
+  if (error) return <div className="alert alert-danger mt-4 container" style={{maxWidth: 500}}>{error}</div>;
+  if (!user) return <div className="container mt-4">Loading profile...</div>;
 
   return (
-    <div>
+    <div className="container mt-4" style={{maxWidth: 500}}>
       <h2>User Profile</h2>
-      <p><b>Username:</b> {user.username}</p>
-      <p><b>Email:</b> {user.email}</p>
+      <div className="card p-3">
+        <p><b>Username:</b> {user.username}</p>
+        <p><b>Email:</b> {user.email}</p>
+      </div>
     </div>
   );
 }

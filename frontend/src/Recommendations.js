@@ -24,21 +24,26 @@ function Recommendations() {
     fetchRecommendations();
   }, []);
 
-  if (error) return <div>{error}</div>;
-  if (!movies.length) return <div>No recommendations yet.</div>;
+  if (error) return <div className="alert alert-danger mt-4 container" style={{maxWidth: 500}}>{error}</div>;
+  if (!movies.length) return <div className="container mt-4">No recommendations yet.</div>;
 
   return (
-    <div>
+    <div className="container mt-4">
       <h2>Recommended Movies</h2>
-      <ul>
+      <div className="row">
         {movies.map(movie => (
-          <li key={movie._id}>
-            <b>{movie.title}</b> ({movie.year}) - {movie.genre}
-            {movie.description && <div>{movie.description}</div>}
-            {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} style={{width: '100px'}} />}
-          </li>
+          <div className="col-md-4 mb-4" key={movie._id || movie.id}>
+            <div className="card h-100">
+              {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className="card-img-top" style={{width: '100px'}} />}
+              <div className="card-body">
+                <h5 className="card-title">{movie.title} <small className="text-muted">({movie.year || movie.release_date ? (movie.year || movie.release_date.substring(0, 4)) : 'N/A'})</small></h5>
+                {movie.genre && <div>{movie.genre}</div>}
+                {movie.description && <p className="card-text">{movie.description}</p>}
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

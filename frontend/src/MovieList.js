@@ -38,31 +38,47 @@ function MovieList() {
   }
 
   return (
-    <div>
+    <div className="container mt-4">
       <h2>Movie Discovery</h2>
-      <form onSubmit={handleSearch}>
-        <input placeholder="Search by title" value={search} onChange={e => setSearch(e.target.value)} />
-        <input placeholder="Year" value={year} onChange={e => setYear(e.target.value)} />
-        <input placeholder="Min Rating" value={voteAverageGte} onChange={e => setVoteAverageGte(e.target.value)} />
-        <input placeholder="Max Rating" value={voteAverageLte} onChange={e => setVoteAverageLte(e.target.value)} />
-        <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-          <option value="popularity.desc">Most Popular</option>
-          <option value="release_date.desc">Newest</option>
-          <option value="vote_average.desc">Top Rated</option>
-        </select>
-        <button type="submit">Search</button>
+      <form className="row g-2 align-items-end mb-3" onSubmit={handleSearch}>
+        <div className="col-md-3">
+          <input placeholder="Search by title" className="form-control" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <input placeholder="Year" className="form-control" value={year} onChange={e => setYear(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <input placeholder="Min Rating" className="form-control" value={voteAverageGte} onChange={e => setVoteAverageGte(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <input placeholder="Max Rating" className="form-control" value={voteAverageLte} onChange={e => setVoteAverageLte(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <select className="form-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+            <option value="popularity.desc">Most Popular</option>
+            <option value="release_date.desc">Newest</option>
+            <option value="vote_average.desc">Top Rated</option>
+          </select>
+        </div>
+        <div className="col-md-1">
+          <button type="submit" className="btn btn-primary w-100">Search</button>
+        </div>
       </form>
-      <ul>
+      <div className="row">
         {movies.map(movie => (
-          <li key={movie.id}>
-            <b>{movie.title}</b> ({movie.release_date ? movie.release_date.substring(0, 4) : 'N/A'})
-            {movie.vote_average && <> - Rating: {movie.vote_average}</>}
-            {movie.overview && <div>{movie.overview}</div>}
-            {movie.poster_path && <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{width: '100px'}} />}
-            <button onClick={() => setSelectedMovie(movie.id)}>Details</button>
-          </li>
+          <div className="col-md-4 mb-4" key={movie.id}>
+            <div className="card h-100">
+              {movie.poster_path && <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} className="card-img-top" />}
+              <div className="card-body">
+                <h5 className="card-title">{movie.title} <small className="text-muted">({movie.release_date ? movie.release_date.substring(0, 4) : 'N/A'})</small></h5>
+                {movie.vote_average && <div>Rating: {movie.vote_average}</div>}
+                {movie.overview && <p className="card-text">{movie.overview}</p>}
+                <button className="btn btn-outline-info mt-2" onClick={() => setSelectedMovie(movie.id)}>Details</button>
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
