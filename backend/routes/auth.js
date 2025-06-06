@@ -5,31 +5,32 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+
 // Register
 router.post('/register', async (req, res) => {
   try {
-    console.log('Register request body:', req.body); // Log incoming data
+    console.log('Register request body:', req.body);
 
-    const { username, password } = req.body;
-    if (!username || !password) {
-      console.log('Missing username or password');
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      console.log('Missing username, email, or password');
       return res.status(400).json({ message: 'All fields required' });
     }
 
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
-      console.log('Username already exists');
-      return res.status(409).json({ message: 'Username already exists' });
+      console.log('Username or email already exists');
+      return res.status(409).json({ message: 'Username or email already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword });
+    const user = new User({ username, email, password: hashedPassword });
     await user.save();
 
-    console.log('User registered successfully:', username);
+    console.log('User registered successfully:', username, email);
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error('Registration error:', err); // More detailed error logging
+    console.error('Registration error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -47,7 +48,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     const token = jwt.sign(
-      { userId: user._id, username: user.username },
+      { userId: user._id, username: user.username, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
