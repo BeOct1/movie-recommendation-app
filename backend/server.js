@@ -9,6 +9,7 @@ const moviesRouter = require('./routes/movies');
 const favoritesRouter = require('./routes/favorites');
 const watchlistsRouter = require('./routes/watchlists');
 const reviewsRouter = require('./routes/reviews');
+const profileRouter = require('./routes/profile');
 
 // Load environment variables
 dotenv.config();
@@ -100,6 +101,7 @@ app.use('/api/movies', moviesRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/watchlists', watchlistsRouter);
 app.use('/api/reviews', reviewsRouter);
+app.use('/api/profile', profileRouter);
 
 app.get('/', (req, res) => {
   res.send('Express server is running!');
