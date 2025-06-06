@@ -105,4 +105,6 @@ app.get('/', (req, res) => {
   res.send('Express server is running!');
 });
 
-app.l
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
