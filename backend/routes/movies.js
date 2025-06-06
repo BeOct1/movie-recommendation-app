@@ -70,14 +70,11 @@ router.get('/search', async (req, res) => {
       year,
       with_genres: genre,
       sort_by,
-      language: 'en-US',
-      include_adult: false,
-      page: 1,
     };
     const tmdbRes = await axios.get('https://api.themoviedb.org/3/search/movie', { params });
     res.json(tmdbRes.data);
   } catch (err) {
-    res.status(500).json({ message: 'TMDB search error', error: err.message });
+    res.status(500).json({ message: 'TMDB search error' });
   }
 });
 
@@ -86,11 +83,11 @@ router.get('/:id', async (req, res) => {
   try {
     const tmdbRes = await axios.get(
       `https://api.themoviedb.org/3/movie/${req.params.id}`,
-      { params: { api_key: TMDB_API_KEY, language: 'en-US' } }
+      { params: { api_key: TMDB_API_KEY, append_to_response: 'credits,videos' } }
     );
     res.json(tmdbRes.data);
   } catch (err) {
-    res.status(500).json({ message: 'TMDB details error', error: err.message });
+    res.status(500).json({ message: 'TMDB details error' });
   }
 });
 
