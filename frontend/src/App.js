@@ -6,10 +6,13 @@ import Login from './Login';
 import Profile from './Profile';
 import MovieList from './MovieList';
 import Recommendations from './Recommendations';
+import MovieSearch from './MovieSearch';
+import MovieDetails from './MovieDetails';
 
 function App() {
   const [view, setView] = useState('login');
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -52,6 +55,13 @@ function App() {
         {isAuthenticated && view === 'movies' && <MovieList />}
         {isAuthenticated && view === 'recommendations' && <Recommendations />}
         {isAuthenticated && view !== 'profile' && view !== 'movies' && view !== 'recommendations' && <div className="container mt-4"><h2>Welcome! You are logged in.</h2></div>}
+        <div>
+          {!selectedMovie ? (
+            <MovieSearch onSelect={setSelectedMovie} />
+          ) : (
+            <MovieDetails movieId={selectedMovie} onBack={() => setSelectedMovie(null)} />
+          )}
+        </div>
       </main>
     </div>
   );
