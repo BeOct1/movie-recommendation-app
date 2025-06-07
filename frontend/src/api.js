@@ -1,18 +1,6 @@
 import { useEffect, useState } from 'react';
 import { authFetch } from './api';
 
-export function authFetch(url, options = {}) {
-  const token = localStorage.getItem('token');
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      Authorization: token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
-    },
-  });
-}
-
 // Example usage in MovieDetails.js
 function FavoriteButton({ movie }) {
   const [message, setMessage] = useState('');

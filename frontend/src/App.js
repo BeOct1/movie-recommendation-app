@@ -73,13 +73,3 @@ function App() {
 }
 
 export default App;
-
-function MovieDetails({ movieId, onBack }) {
-  // ...fetch movie logic...
-  return (
-    <div>
-      {/* ...movie info... */}
-      <AddMovieToWatchlist movie={movie} />
-    </div>
-  );
-}
