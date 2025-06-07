@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { authFetch } from './api';
+import authFetch from './api';
 
 function FavoritesList() {
   const [favorites, setFavorites] = useState([]);

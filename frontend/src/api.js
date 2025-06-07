@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { authFetch } from './api';
+import authFetch from './api';
 
 // Example usage in MovieDetails.js
 function FavoriteButton({ movie }) {

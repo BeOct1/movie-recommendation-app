@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { authFetch } from './api';
+import authFetch from './api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function AddMovieToWatchlist({ movie }) {
