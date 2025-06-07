@@ -8,6 +8,9 @@ import MovieList from './MovieList';
 import Recommendations from './Recommendations';
 import MovieSearch from './MovieSearch';
 import MovieDetails from './MovieDetails';
+import FavoritesList from './FavoritesList';
+import Watchlists from './Watchlists';
+import AddMovieToWatchlist from './AddMovieToWatchlist';
 
 function App() {
   const [view, setView] = useState('login');
@@ -62,9 +65,21 @@ function App() {
             <MovieDetails movieId={selectedMovie} onBack={() => setSelectedMovie(null)} />
           )}
         </div>
+        <FavoritesList />
+        <Watchlists />
       </main>
     </div>
   );
 }
 
 export default App;
+
+function MovieDetails({ movieId, onBack }) {
+  // ...fetch movie logic...
+  return (
+    <div>
+      {/* ...movie info... */}
+      <AddMovieToWatchlist movie={movie} />
+    </div>
+  );
+}
