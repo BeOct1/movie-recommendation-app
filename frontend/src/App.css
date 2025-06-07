@@ -36,3 +36,51 @@
     transform: rotate(360deg);
   }
 }
+
+/* App.css */
+.app-bg {
+  background: linear-gradient(135deg, #23243a 0%, #181926 100%);
+  min-height: 100vh;
+}
+.auth-card {
+  background: #23243a;
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  color: #fff;
+}
+.auth-card input, .auth-card .form-control {
+  background: #23243a;
+  color: #fff;
+  border: 1px solid #444;
+}
+.auth-card input:focus, .auth-card .form-control:focus {
+  background: #23243a;
+  color: #fff;
+  border-color: #ffc107;
+  box-shadow: 0 0 0 0.2rem rgba(255,193,7,.25);
+}
+.auth-card .btn-warning, .auth-card .btn-outline-warning {
+  background: #ffc107;
+  color: #23243a;
+  border: none;
+  font-weight: bold;
+}
+.auth-card .btn-warning:hover, .auth-card .btn-outline-warning:hover {
+  background: #ffb300;
+  color: #23243a;
+}
+.auth-card .btn-link.text-warning {
+  color: #ffc107;
+  text-decoration: underline;
+}
+.auth-card .btn-link.text-warning:hover {
+  color: #ffb300;
+}
+.auth-card .alert {
+  border-radius: 0.75rem;
+  font-size: 1.05em;
+}
+footer {
+  background: transparent;
+  color: #bbb;
+}

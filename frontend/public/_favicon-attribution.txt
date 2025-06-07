@@ -1,0 +1,5 @@
+<!--
+Cinema icons created by Good Ware - Flaticon
+https://www.flaticon.com/free-icons/cinema
+-->
+<link rel="icon" type="image/png" href="/favicon.ico" />

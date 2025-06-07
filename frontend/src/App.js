@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Register from './Register';
 import Login from './Login';
@@ -10,7 +9,6 @@ import MovieSearch from './MovieSearch';
 import MovieDetails from './MovieDetails';
 import FavoritesList from './FavoritesList';
 import Watchlists from './Watchlists';
-import AddMovieToWatchlist from './AddMovieToWatchlist';
 
 function App() {
   const [view, setView] = useState('login');
@@ -29,45 +27,45 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="bg-dark text-white p-3 mb-4">
-        <div className="container d-flex flex-wrap align-items-center justify-content-between">
-          <h1 className="mb-0">Movie Recommendation App</h1>
-          <nav>
-            {!isAuthenticated && (
-              <>
-                <button className="btn btn-outline-light me-2" onClick={() => setView('login')}>Login</button>
-                <button className="btn btn-outline-light" onClick={() => setView('register')}>Register</button>
-              </>
-            )}
-            {isAuthenticated && (
-              <>
-                <button className="btn btn-outline-light me-2" onClick={handleLogout}>Logout</button>
-                <button className="btn btn-outline-light me-2" onClick={() => setView('profile')}>Profile</button>
-                <button className="btn btn-outline-light me-2" onClick={() => setView('movies')}>Movies</button>
-                <button className="btn btn-outline-light" onClick={() => setView('recommendations')}>Recommendations</button>
-              </>
-            )}
-          </nav>
+    <div className="app-bg min-vh-100 d-flex flex-column justify-content-between">
+      <main className="flex-grow-1 d-flex align-items-center justify-content-center">
+        <div className="auth-card p-4 rounded-4 shadow-lg mx-auto" style={{maxWidth: 400, width: '100%'}}>
+          {view === 'register' ? (
+            <>
+              <h2 className="text-center mb-3 fw-bold text-warning">Create Account</h2>
+              <Register />
+              <div className="text-center mt-3">
+                <span className="text-light">Already have an account? </span>
+                <button className="btn btn-link text-warning p-0" onClick={() => setView('login')}>Login</button>
+              </div>
+            </>
+          ) : view === 'login' ? (
+            <>
+              <h2 className="text-center mb-3 fw-bold text-warning">Sign In</h2>
+              <Login onLogin={handleLogin} />
+              <div className="text-center mt-3">
+                <span className="text-light">Don't have an account? </span>
+                <button className="btn btn-link text-warning p-0" onClick={() => setView('register')}>Register</button>
+              </div>
+            </>
+          ) : isAuthenticated ? (
+            <>
+              {view === 'profile' && <Profile />}
+              {view === 'movies' && <MovieList />}
+              {view === 'recommendations' && <Recommendations />}
+              <div className="d-flex flex-column gap-3 mt-4">
+                <FavoritesList />
+                <Watchlists />
+              </div>
+              <button className="btn btn-outline-warning w-100 mt-3" onClick={handleLogout}>Logout</button>
+            </>
+          ) : null}
         </div>
-      </header>
-      <main>
-        {!isAuthenticated && view === 'login' && <Login onLogin={handleLogin} />}
-        {!isAuthenticated && view === 'register' && <Register />}
-        {isAuthenticated && view === 'profile' && <Profile />}
-        {isAuthenticated && view === 'movies' && <MovieList />}
-        {isAuthenticated && view === 'recommendations' && <Recommendations />}
-        {isAuthenticated && view !== 'profile' && view !== 'movies' && view !== 'recommendations' && <div className="container mt-4"><h2>Welcome! You are logged in.</h2></div>}
-        <div>
-          {!selectedMovie ? (
-            <MovieSearch onSelect={setSelectedMovie} />
-          ) : (
-            <MovieDetails movieId={selectedMovie} onBack={() => setSelectedMovie(null)} />
-          )}
-        </div>
-        <FavoritesList />
-        <Watchlists />
       </main>
+      <footer className="text-center text-light py-3 small">
+        <span>&copy; {new Date().getFullYear()} MovieVerse <span role="img" aria-label="clapper">🎬</span> | Built with <span className="text-danger">♥</span> by Ndutech</span>
+        <div className="text-secondary mt-1" style={{fontSize: '0.9em'}}>movie-app-frontend-rye9.vercel.app</div>
+      </footer>
     </div>
   );
 }
