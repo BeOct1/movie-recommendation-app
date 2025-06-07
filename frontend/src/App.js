@@ -63,8 +63,7 @@ function App() {
         </div>
       </main>
       <footer className="text-center text-light py-3 small">
-        <span>&copy; {new Date().getFullYear()} MovieVerse <span role="img" aria-label="clapper">🎬</span> | Built with <span className="text-danger">♥</span> by Ndutech</span>
-        <div className="text-secondary mt-1" style={{fontSize: '0.9em'}}>movie-app-frontend-rye9.vercel.app</div>
+        <span>&copy; {new Date().getFullYear()} 3MTT | BeTech Solution</span>
       </footer>
     </div>
   );
