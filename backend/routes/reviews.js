@@ -49,4 +49,49 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+// Edit review
+router.put(
+  '/:id',
+  [
+    body('rating').isInt({ min: 1, max: 10 }).withMessage('Rating must be between 1 and 10'),
+    body('comment').optional().isLength({ max: 500 }).withMessage('Comment max length is 500'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      const review = await Review.findById(req.params.id);
+      if (!review) return res.status(404).json({ message: 'Review not found' });
+      // Only allow the author to edit
+      if (String(review.user) !== String(req.user.userId)) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      review.rating = req.body.rating;
+      review.comment = req.body.comment;
+      await review.save();
+      res.json(review);
+    } catch (err) {
+      res.status(500).json({ message: 'Error updating review' });
+    }
+  }
+);
+
+// Delete review
+router.delete('/:id', async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
+    if (!review) return res.status(404).json({ message: 'Review not found' });
+    // Only allow the author to delete
+    if (String(review.user) !== String(req.user.userId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    await review.deleteOne();
+    res.json({ message: 'Review deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting review' });
+  }
+});
+
 module.exports = router;
