@@ -15,41 +15,56 @@ function MovieDetails({ movieId, onBack }) {
   if (!movie) return <div className="text-center mt-5">Select a movie to see details.</div>;
 
   return (
-    <div className="container my-5">
-      <div className="row g-4 align-items-start">
-        <div className="col-md-4">
+    <div className="movie-details-container" aria-label="Movie Details">
+      <div className="movie-details-flex">
+        <div className="movie-details-poster">
           {movie.poster_path ? (
-            <img src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`} alt={movie.title} className="img-fluid rounded-4 shadow" />
+            <img
+              src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+              alt={movie.title}
+              style={{ borderRadius: 18, width: '100%', maxWidth: 300 }}
+            />
           ) : (
-            <div style={{ height: 420, background: '#eee', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
+            <div style={{ height: 300, width: 200, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', borderRadius: 18 }}>No Image</div>
           )}
         </div>
-        <div className="col-md-8">
-          <h1 className="fw-bold mb-2" style={{ fontSize: 40 }}>{movie.title}</h1>
-          <div className="mb-3">
-            <span className="badge bg-warning text-dark me-2" style={{ fontSize: 18 }}>{movie.vote_average} / 10</span>
-            <span className="text-secondary">{movie.release_date}</span>
-          </div>
-          <p className="mb-3" style={{ fontSize: 18 }}>{movie.overview}</p>
-          <div className="mb-3">
-            <strong>Genres:</strong> {movie.genres?.map(g => g.name).join(', ') || 'N/A'}
-          </div>
-          {movie.homepage && (
-            <a href={movie.homepage} target="_blank" rel="noopener noreferrer" className="btn btn-outline-secondary mb-3">Official Website</a>
-          )}
-          {/* Rating widget placeholder */}
-          <div className="mb-4">
-            <strong>Your Rating:</strong> <span className="text-muted">(Coming soon)</span>
-          </div>
+        <div className="movie-details-info">
+          <h2 className="fw-bold mb-2">{movie.title}</h2>
+          <div className="mb-2 text-secondary">{movie.release_date}</div>
+          <div className="mb-3">{movie.overview}</div>
+          <button className="btn btn-secondary me-2" onClick={onBack} aria-label="Back to list" style={{ minHeight: 44, minWidth: 44 }}>Back</button>
+          {/* Add more accessible actions here if needed */}
         </div>
       </div>
-      {/* User reviews section placeholder */}
-      <div className="mt-5">
-        <h3 className="fw-bold mb-3">User Reviews</h3>
-        <div className="card p-4 rounded-4 shadow-sm mb-3" style={{ background: '#f8fafc' }}>
-          <div className="text-muted">User reviews and review form coming soon.</div>
-        </div>
-      </div>
+      <style>{`
+        .movie-details-container {
+          width: 100%;
+          max-width: 900px;
+          margin: 0 auto;
+          padding: 2rem 1rem;
+        }
+        .movie-details-flex {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+        }
+        @media (min-width: 900px) {
+          .movie-details-flex {
+            flex-direction: row;
+          }
+          .movie-details-poster {
+            flex: 0 0 300px;
+          }
+          .movie-details-info {
+            flex: 1;
+          }
+        }
+        .btn-secondary {
+          font-size: 1rem;
+          padding: 0.75rem 1.25rem;
+          border-radius: 8px;
+        }
+      `}</style>
     </div>
   );
 }
