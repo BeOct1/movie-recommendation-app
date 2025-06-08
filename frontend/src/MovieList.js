@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import MovieDetails from './MovieDetails';
+import { searchMovies } from './api';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
@@ -11,16 +12,21 @@ function MovieList() {
   const [voteAverageGte, setVoteAverageGte] = useState('');
   const [voteAverageLte, setVoteAverageLte] = useState('');
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const fetchMovies = async () => {
-    let url = `${API_URL}/api/movies/search?query=${encodeURIComponent(search)}`;
-    if (year) url += `&year=${encodeURIComponent(year)}`;
-    if (sortBy) url += `&sort_by=${encodeURIComponent(sortBy)}`;
-    if (voteAverageGte) url += `&vote_average_gte=${encodeURIComponent(voteAverageGte)}`;
-    if (voteAverageLte) url += `&vote_average_lte=${encodeURIComponent(voteAverageLte)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    setMovies(data.results || []);
+    setLoading(true);
+    setError('');
+    searchMovies({ query: search, year, sort_by: sortBy, vote_average_gte: voteAverageGte, vote_average_lte: voteAverageLte })
+      .then(data => {
+        setMovies(data.results || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -39,6 +45,8 @@ function MovieList() {
 
   return (
     <div className="container my-4">
+      {loading && <div className="text-center my-4"><div className="spinner-border text-warning" role="status"><span className="visually-hidden">Loading...</span></div></div>}
+      {error && <div className="alert alert-info mt-2">{error}</div>}
       <h2>Movie Discovery</h2>
       <form className="row g-2 align-items-end mb-3" onSubmit={handleSearch}>
         <div className="col-md-3">

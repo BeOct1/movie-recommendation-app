@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { searchMovies } from './api';
 
 function MovieSearch({ setSelectedMovie }) {
   const [query, setQuery] = useState('');
@@ -6,6 +7,7 @@ function MovieSearch({ setSelectedMovie }) {
   const [genre, setGenre] = useState('');
   const [results, setResults] = useState([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const debounceRef = useRef();
 
   useEffect(() => {
@@ -23,16 +25,15 @@ function MovieSearch({ setSelectedMovie }) {
 
   const handleSearch = async () => {
     setMessage('');
+    setLoading(true);
     try {
-      const params = new URLSearchParams({ query, year, genre });
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/movies/search?${params}`
-      );
-      const data = await res.json();
+      const data = await searchMovies({ query, year, genre });
       setResults(data.results || []);
       if (!data.results || data.results.length === 0) setMessage('No movies found.');
-    } catch {
-      setMessage('Error searching movies.');
+    } catch (err) {
+      setMessage(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,6 +83,7 @@ function MovieSearch({ setSelectedMovie }) {
           <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ borderRadius: 24, fontSize: 18 }}>Search</button>
         </div>
       </form>
+      {loading && <div className="text-center my-4"><div className="spinner-border text-warning" role="status"><span className="visually-hidden">Loading...</span></div></div>}
       {message && <div className="alert alert-info mt-2">{message}</div>}
       <div className="row mt-3">
         {results.map(movie => (

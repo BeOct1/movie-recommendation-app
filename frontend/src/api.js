@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react';
-import authFetch from './api';
+import authFetch, { handleApiError } from './api';
 
 // Example usage in MovieDetails.js
 function FavoriteButton({ movie }) {
   const [message, setMessage] = useState('');
 
   const addFavorite = async () => {
-    const res = await authFetch(
-      `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/favorites`,
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          movieId: movie.id,
-          title: movie.title,
-          posterPath: movie.poster_path,
-        }),
-      }
-    );
-    const data = await res.json();
-    setMessage(res.ok ? 'Added to favorites!' : data.message);
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/favorites`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            movieId: movie.id,
+            title: movie.title,
+            posterPath: movie.poster_path,
+          }),
+        }
+      );
+      const data = await res.json();
+      setMessage(res.ok ? 'Added to favorites!' : data.message);
+    } catch (error) {
+      setMessage(handleApiError(error));
+    }
   };
 
   return (
@@ -36,21 +40,25 @@ function ReviewForm({ movieId, onReview }) {
 
   const submitReview = async e => {
     e.preventDefault();
-    const res = await authFetch(
-      `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ movieId, rating, comment }),
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ movieId, rating, comment }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Review submitted!');
+        setRating('');
+        setComment('');
+        if (onReview) onReview();
+      } else {
+        setMessage(data.message);
       }
-    );
-    const data = await res.json();
-    if (res.ok) {
-      setMessage('Review submitted!');
-      setRating('');
-      setComment('');
-      if (onReview) onReview();
-    } else {
-      setMessage(data.message);
+    } catch (error) {
+      setMessage(handleApiError(error));
     }
   };
 
@@ -82,15 +90,19 @@ function Profile() {
 
   const handleUpdate = async e => {
     e.preventDefault();
-    const res = await authFetch(
-      `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/profile`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(profile),
-      }
-    );
-    const data = await res.json();
-    setMessage(res.ok ? 'Profile updated!' : data.message);
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/profile`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(profile),
+        }
+      );
+      const data = await res.json();
+      setMessage(res.ok ? 'Profile updated!' : data.message);
+    } catch (error) {
+      setMessage(handleApiError(error));
+    }
   };
 
   if (!profile) return <div>Loading...</div>;
