@@ -1,32 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import authFetch from './api';
+import { getFavorites, removeFavorite } from './api';
 
 function FavoritesList({ compact }) {
   const [favorites, setFavorites] = useState([]);
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const fetchFavorites = async () => {
-    const res = await authFetch(
-      `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/favorites`
-    );
-    const data = await res.json();
-    if (res.ok) setFavorites(data);
-    else setMessage(data.message || 'Failed to fetch favorites');
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getFavorites();
+      setFavorites(data);
+    } catch (err) {
+      setError(err);
+    }
     setLoading(false);
   };
 
-  const removeFavorite = async (movieId) => {
-    const res = await authFetch(
-      `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/favorites/${movieId}`,
-      { method: 'DELETE' }
-    );
-    const data = await res.json();
-    if (res.ok) {
+  const handleRemoveFavorite = async (movieId) => {
+    try {
+      await removeFavorite(movieId);
       setFavorites(favorites.filter(fav => fav.movieId !== movieId));
-      setMessage('Favorite removed');
-    } else {
-      setMessage(data.message || 'Failed to remove favorite');
+    } catch (err) {
+      setError(err);
     }
   };
 
@@ -36,6 +33,7 @@ function FavoritesList({ compact }) {
   }, []);
 
   if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-danger">{error}</div>;
   if (!favorites.length) return <div className="text-secondary">No favorites yet.</div>;
 
   if (compact) {
@@ -63,6 +61,9 @@ function FavoritesList({ compact }) {
             )}
             <div className="card-body d-flex flex-column">
               <h6 className="card-title fw-bold text-truncate">{fav.title}</h6>
+              <button className="btn btn-sm btn-outline-danger mt-auto" onClick={() => handleRemoveFavorite(fav.movieId)}>
+                Remove
+              </button>
             </div>
           </div>
         </div>

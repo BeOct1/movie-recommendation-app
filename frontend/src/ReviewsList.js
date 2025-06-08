@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { getUserReviews, addReview, updateReview, deleteReview } from './api';
 
 function ReviewsList({ userId }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ movieId: '', movieTitle: '', rating: '', comment: '' });
+  const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getUserReviews(userId);
+      setReviews(data);
+    } catch (err) {
+      setError(err);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (!userId) return;
-    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews/user/${userId}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setReviews(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetchReviews();
+    // eslint-disable-next-line
   }, [userId]);
 
   const handleChange = e => {
@@ -27,35 +34,24 @@ function ReviewsList({ userId }) {
   const handleSubmit = async e => {
     e.preventDefault();
     setMessage('');
+    setError('');
     if (!form.movieId || !form.rating) {
-      setMessage('Movie ID and rating are required.');
+      setError('Movie ID and rating are required.');
       return;
     }
-    const method = editingId ? 'PUT' : 'POST';
-    const url = editingId
-      ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews/${editingId}`
-      : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews`;
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(form)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMessage(editingId ? 'Review updated!' : 'Review added!');
+    try {
+      if (editingId) {
+        await updateReview(editingId, form);
+        setMessage('Review updated!');
+      } else {
+        await addReview(form);
+        setMessage('Review added!');
+      }
       setEditingId(null);
       setForm({ movieId: '', movieTitle: '', rating: '', comment: '' });
-      // Refresh reviews
-      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews/user/${userId}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      })
-        .then(res => res.json())
-        .then(setReviews);
-    } else {
-      setMessage(data.message || 'Error saving review');
+      fetchReviews();
+    } catch (err) {
+      setError(err);
     }
   };
 
@@ -71,16 +67,16 @@ function ReviewsList({ userId }) {
 
   const handleDelete = async id => {
     if (!window.confirm('Delete this review?')) return;
-    const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (res.ok) {
+    try {
+      await deleteReview(id);
       setReviews(reviews.filter(r => r._id !== id));
+    } catch (err) {
+      setError(err);
     }
   };
 
   if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-danger">{error}</div>;
   if (!reviews.length) return <div className="text-secondary">No reviews yet.</div>;
 
   return (

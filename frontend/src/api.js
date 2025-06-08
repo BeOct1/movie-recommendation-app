@@ -1,126 +1,132 @@
-import { useEffect, useState } from 'react';
-import authFetch, { handleApiError } from './api';
+import axios from 'axios';
 
-// Example usage in MovieDetails.js
-function FavoriteButton({ movie }) {
-  const [message, setMessage] = useState('');
+// Centralized Axios instance with JWT and error handling
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL
+    ? process.env.REACT_APP_API_URL + '/api'
+    : 'http://localhost:5000/api',
+  withCredentials: true, // for refresh token cookie
+});
 
-  const addFavorite = async () => {
-    try {
-      const res = await authFetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/favorites`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            movieId: movie.id,
-            title: movie.title,
-            posterPath: movie.poster_path,
-          }),
-        }
-      );
-      const data = await res.json();
-      setMessage(res.ok ? 'Added to favorites!' : data.message);
-    } catch (error) {
-      setMessage(handleApiError(error));
-    }
-  };
+// Attach JWT from localStorage if present
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
 
-  return (
-    <div>
-      <button className="btn btn-warning" onClick={addFavorite}>Add to Favorites</button>
-      {message && <div className="mt-2">{message}</div>}
-    </div>
-  );
+// Centralized error handler
+export function handleApiError(error) {
+  if (error.response && error.response.data && error.response.data.message) {
+    return error.response.data.message;
+  }
+  if (error.message) return error.message;
+  return 'An error occurred.';
 }
 
-function ReviewForm({ movieId, onReview }) {
-  const [rating, setRating] = useState('');
-  const [comment, setComment] = useState('');
-  const [message, setMessage] = useState('');
-
-  const submitReview = async e => {
-    e.preventDefault();
-    try {
-      const res = await authFetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ movieId, rating, comment }),
-        }
-      );
-      const data = await res.json();
-      if (res.ok) {
-        setMessage('Review submitted!');
-        setRating('');
-        setComment('');
-        if (onReview) onReview();
-      } else {
-        setMessage(data.message);
-      }
-    } catch (error) {
-      setMessage(handleApiError(error));
-    }
-  };
-
-  return (
-    <form onSubmit={submitReview}>
-      <div className="mb-2">
-        <label>Rating (1-10)</label>
-        <input className="form-control" type="number" min="1" max="10" value={rating} onChange={e => setRating(e.target.value)} required />
-      </div>
-      <div className="mb-2">
-        <label>Comment</label>
-        <textarea className="form-control" value={comment} onChange={e => setComment(e.target.value)} />
-      </div>
-      <button className="btn btn-success" type="submit">Submit Review</button>
-      {message && <div className="mt-2">{message}</div>}
-    </form>
-  );
+// --- FAVORITES ---
+const favoritesCache = { list: null };
+export async function getFavorites(force = false) {
+  if (favoritesCache.list && !force) return favoritesCache.list;
+  try {
+    const { data } = await api.get('/favorites');
+    favoritesCache.list = data;
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function addFavorite(movie) {
+  try {
+    const { data } = await api.post('/favorites', movie);
+    favoritesCache.list = null; // Invalidate cache
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function removeFavorite(movieId) {
+  try {
+    const { data } = await api.delete(`/favorites/${movieId}`);
+    favoritesCache.list = null;
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 }
 
-function Profile() {
-  const [profile, setProfile] = useState(null);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    authFetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/profile`)
-      .then(res => res.json())
-      .then(setProfile);
-  }, []);
-
-  const handleUpdate = async e => {
-    e.preventDefault();
-    try {
-      const res = await authFetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/profile`,
-        {
-          method: 'PUT',
-          body: JSON.stringify(profile),
-        }
-      );
-      const data = await res.json();
-      setMessage(res.ok ? 'Profile updated!' : data.message);
-    } catch (error) {
-      setMessage(handleApiError(error));
-    }
-  };
-
-  if (!profile) return <div>Loading...</div>;
-
-  return (
-    <form onSubmit={handleUpdate}>
-      <div className="mb-2">
-        <label>Username</label>
-        <input className="form-control" value={profile.username} onChange={e => setProfile({ ...profile, username: e.target.value })} />
-      </div>
-      <div className="mb-2">
-        <label>Email</label>
-        <input className="form-control" value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })} />
-      </div>
-      <button className="btn btn-primary" type="submit">Update Profile</button>
-      {message && <div className="mt-2">{message}</div>}
-    </form>
-  );
+// --- WATCHLISTS ---
+const watchlistsCache = { list: null };
+export async function getWatchlists(force = false) {
+  if (watchlistsCache.list && !force) return watchlistsCache.list;
+  try {
+    const { data } = await api.get('/watchlists');
+    watchlistsCache.list = data;
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function createWatchlist(watchlist) {
+  try {
+    const { data } = await api.post('/watchlists', watchlist);
+    watchlistsCache.list = null;
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function addMovieToWatchlist(watchlistId, movie) {
+  try {
+    const { data } = await api.post(`/watchlists/${watchlistId}/movies`, movie);
+    watchlistsCache.list = null;
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function removeMovieFromWatchlist(watchlistId, movieId) {
+  try {
+    const { data } = await api.delete(`/watchlists/${watchlistId}/movies/${movieId}`);
+    watchlistsCache.list = null;
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 }
 
-export default Profile;
+// --- REVIEWS ---
+export async function getUserReviews(userId) {
+  try {
+    const { data } = await api.get(`/reviews/user/${userId}`);
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function addReview(review) {
+  try {
+    const { data } = await api.post('/reviews', review);
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function updateReview(id, review) {
+  try {
+    const { data } = await api.put(`/reviews/${id}`, review);
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+export async function deleteReview(id) {
+  try {
+    const { data } = await api.delete(`/reviews/${id}`);
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
