@@ -39,4 +39,14 @@ router.get('/:movieId', async (req, res) => {
   }
 });
 
+// Get reviews by user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const reviews = await Review.find({ user: req.params.userId }).populate('movieId', 'title');
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user reviews' });
+  }
+});
+
 module.exports = router;

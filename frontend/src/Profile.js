@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import FavoritesList from './FavoritesList';
 import Watchlists from './Watchlists';
-// import ReviewsList from './ReviewsList'; // If you have a reviews component
+import ReviewsList from './ReviewsList';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
@@ -62,12 +62,12 @@ function Profile() {
           </div>
         </div>
       </div>
-      {/* Reviews Section (placeholder) */}
+      {/* Reviews Section */}
       <div className="row mt-4">
         <div className="col-12">
           <div className="card p-4 rounded-4 shadow-sm" style={{ background: '#f8fafc' }}>
             <h4 className="fw-bold mb-3">Your Reviews</h4>
-            <div className="text-secondary">User reviews and review management coming soon.</div>
+            <ReviewsList userId={user._id} />
           </div>
         </div>
       </div>
