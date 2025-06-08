@@ -38,7 +38,7 @@ function MovieList() {
   }
 
   return (
-    <div className="container mt-4">
+    <div className="container my-4">
       <h2>Movie Discovery</h2>
       <form className="row g-2 align-items-end mb-3" onSubmit={handleSearch}>
         <div className="col-md-3">
@@ -66,19 +66,49 @@ function MovieList() {
       </form>
       <div className="row">
         {movies.map(movie => (
-          <div className="col-md-4 mb-4" key={movie.id}>
-            <div className="card h-100">
-              {movie.poster_path && <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} className="card-img-top" />}
-              <div className="card-body">
-                <h5 className="card-title">{movie.title} <small className="text-muted">({movie.release_date ? movie.release_date.substring(0, 4) : 'N/A'})</small></h5>
-                {movie.vote_average && <div>Rating: {movie.vote_average}</div>}
-                {movie.overview && <p className="card-text">{movie.overview}</p>}
-                <button className="btn btn-outline-info mt-2" onClick={() => setSelectedMovie(movie.id)}>Details</button>
+          <div
+            className="col-md-3 mb-4"
+            key={movie.id}
+            style={{ display: 'flex', alignItems: 'stretch' }}
+          >
+            <div
+              className="card h-100 shadow-sm border-0 movie-card-hover"
+              style={{
+                borderRadius: 18,
+                overflow: 'hidden',
+                transition: 'transform 0.3s, box-shadow 0.3s',
+                cursor: 'pointer',
+                background: '#fff',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
+              }}
+              onClick={() => setSelectedMovie(movie)}
+            >
+              {movie.poster_path ? (
+                <img
+                  src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+                  alt={movie.title}
+                  className="card-img-top"
+                  style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18, objectFit: 'cover', height: 340 }}
+                />
+              ) : (
+                <div style={{ height: 340, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
+              )}
+              <div className="card-body d-flex flex-column">
+                <h5 className="card-title fw-bold" style={{ fontSize: 20 }}>{movie.title}</h5>
+                <p className="card-text text-secondary mb-1">Rating: {movie.vote_average}</p>
+                <p className="card-text text-secondary mb-2">Release: {movie.release_date}</p>
+                {/* ...other info... */}
               </div>
             </div>
           </div>
         ))}
       </div>
+      <style>{`
+        .movie-card-hover:hover {
+          transform: scale(1.04);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+        }
+      `}</style>
     </div>
   );
 }

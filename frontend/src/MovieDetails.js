@@ -12,36 +12,42 @@ function MovieDetails({ movieId, onBack }) {
       .then(setMovie);
   }, [movieId]);
 
-  if (!movie) return <div className="container mt-4">Loading...</div>;
+  if (!movie) return <div className="text-center mt-5">Select a movie to see details.</div>;
 
   return (
-    <div className="container my-4">
-      <button className="btn btn-secondary mb-3" onClick={onBack}>Back to Search</button>
-      <div className="row">
+    <div className="container my-5">
+      <div className="row g-4 align-items-start">
         <div className="col-md-4">
-          {movie.poster_path && (
-            <img src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`} alt={movie.title} className="img-fluid" />
+          {movie.poster_path ? (
+            <img src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`} alt={movie.title} className="img-fluid rounded-4 shadow" />
+          ) : (
+            <div style={{ height: 420, background: '#eee', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
           )}
         </div>
         <div className="col-md-8">
-          <h2>{movie.title}</h2>
-          <p><strong>Release Date:</strong> {movie.release_date}</p>
-          <p><strong>Overview:</strong> {movie.overview}</p>
-          <p><strong>Genres:</strong> {movie.genres?.map(g => g.name).join(', ')}</p>
-          <p><strong>Rating:</strong> {movie.vote_average}</p>
-          <p><strong>Cast:</strong> {movie.credits?.cast?.slice(0, 5).map(c => c.name).join(', ')}</p>
-          {movie.videos?.results?.length > 0 && (
-            <div>
-              <strong>Trailer:</strong>
-              <div className="ratio ratio-16x9">
-                <iframe
-                  src={`https://www.youtube.com/embed/${movie.videos.results[0].key}`}
-                  title="Trailer"
-                  allowFullScreen
-                />
-              </div>
-            </div>
+          <h1 className="fw-bold mb-2" style={{ fontSize: 40 }}>{movie.title}</h1>
+          <div className="mb-3">
+            <span className="badge bg-warning text-dark me-2" style={{ fontSize: 18 }}>{movie.vote_average} / 10</span>
+            <span className="text-secondary">{movie.release_date}</span>
+          </div>
+          <p className="mb-3" style={{ fontSize: 18 }}>{movie.overview}</p>
+          <div className="mb-3">
+            <strong>Genres:</strong> {movie.genres?.map(g => g.name).join(', ') || 'N/A'}
+          </div>
+          {movie.homepage && (
+            <a href={movie.homepage} target="_blank" rel="noopener noreferrer" className="btn btn-outline-secondary mb-3">Official Website</a>
           )}
+          {/* Rating widget placeholder */}
+          <div className="mb-4">
+            <strong>Your Rating:</strong> <span className="text-muted">(Coming soon)</span>
+          </div>
+        </div>
+      </div>
+      {/* User reviews section placeholder */}
+      <div className="mt-5">
+        <h3 className="fw-bold mb-3">User Reviews</h3>
+        <div className="card p-4 rounded-4 shadow-sm mb-3" style={{ background: '#f8fafc' }}>
+          <div className="text-muted">User reviews and review form coming soon.</div>
         </div>
       </div>
     </div>

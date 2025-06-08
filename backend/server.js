@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -26,7 +27,10 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB connection
+
 mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
   serverApi: {
     version: '1',
     strict: true,
@@ -38,6 +42,16 @@ mongoose.connect(process.env.MONGODB_URI, {
   }).catch((err) => {
     console.error('MongoDB connection error:', err);
   });
+
+// User schema and model
+
+const UserSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
+
+const User = mongoose.model('User', UserSchema);
+// Middleware to check JWT
 
 //const getHttpsConfig = require('./getHttpsConfig');
 // Registration route
@@ -61,6 +75,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login route
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -83,6 +98,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Add a protected profile route
+
 app.get('/api/auth/profile', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -96,6 +112,9 @@ app.get('/api/auth/profile', async (req, res) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 });
+
+// Import routes
+const moviesRouter = require('./routes/movies'); 
 
 app.use('/api/movies', moviesRouter);
 app.use('/api/favorites', favoritesRouter);

@@ -31,21 +31,36 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 400 }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label>Email</label>
-          <input className="form-control" name="email" type="email" value={form.email} onChange={handleChange} required />
-        </div>
-        <div className="mb-3">
-          <label>Password</label>
-          <input className="form-control" name="password" type="password" value={form.password} onChange={handleChange} required />
-        </div>
-        <button className="btn btn-primary w-100" type="submit">Login</button>
-      </form>
+    <form onSubmit={handleSubmit} className="needs-validation" noValidate style={{ gap: 24, display: 'flex', flexDirection: 'column' }}>
+      <div className="form-floating mb-3">
+        <input
+          type="email"
+          className="form-control rounded-3"
+          id="loginEmail"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          required
+        />
+        <label htmlFor="loginEmail">Email address</label>
+      </div>
+      <div className="form-floating mb-3">
+        <input
+          type="password"
+          className="form-control rounded-3"
+          id="loginPassword"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
+        <label htmlFor="loginPassword">Password</label>
+      </div>
+      <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ fontSize: 18, borderRadius: 24, transition: 'box-shadow 0.3s' }}>Login</button>
       {message && <div className="alert alert-info mt-3">{message}</div>}
-    </div>
+    </form>
   );
 }
 

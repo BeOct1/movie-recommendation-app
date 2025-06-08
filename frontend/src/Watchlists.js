@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import authFetch from './api';
 
-function Watchlists() {
+function Watchlists({ compact }) {
   const [watchlists, setWatchlists] = useState([]);
   const [newName, setNewName] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchWatchlists = async () => {
     const res = await authFetch(
@@ -13,6 +14,7 @@ function Watchlists() {
     const data = await res.json();
     if (res.ok) setWatchlists(data);
     else setMessage(data.message || 'Failed to fetch watchlists');
+    setLoading(false);
   };
 
   const createWatchlist = async e => {
@@ -39,39 +41,34 @@ function Watchlists() {
     // eslint-disable-next-line
   }, []);
 
-  return (
-    <div className="container my-4">
-      <h3>Your Watchlists</h3>
-      <form className="mb-3" onSubmit={createWatchlist}>
-        <div className="input-group">
-          <input
-            className="form-control"
-            placeholder="New watchlist name"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            required
-          />
-          <button className="btn btn-primary" type="submit">Create</button>
-        </div>
-      </form>
-      {message && <div className="alert alert-info">{message}</div>}
-      <div>
-        {watchlists.map(wl => (
-          <div key={wl._id} className="mb-3">
-            <h5>{wl.name}</h5>
-            <ul>
-              {wl.movies && wl.movies.length > 0 ? (
-                wl.movies.map(m => (
-                  <li key={m.movieId}>{m.title}</li>
-                ))
-              ) : (
-                <li>No movies yet.</li>
-              )}
-            </ul>
-          </div>
+  if (loading) return <div>Loading...</div>;
+  if (!watchlists.length) return <div className="text-secondary">No watchlists yet.</div>;
+
+  if (compact) {
+    return (
+      <ul className="list-group list-group-flush">
+        {watchlists.slice(0, 2).map(wl => (
+          <li key={wl._id || wl.name} className="list-group-item bg-transparent px-0 py-1 border-0 text-truncate">
+            {wl.name} ({wl.movies.length} movies)
+          </li>
         ))}
-        {watchlists.length === 0 && <div>No watchlists yet.</div>}
-      </div>
+        {watchlists.length > 2 && <li className="list-group-item bg-transparent px-0 py-1 border-0 text-primary">...and {watchlists.length - 2} more</li>}
+      </ul>
+    );
+  }
+
+  return (
+    <div className="row">
+      {watchlists.map(wl => (
+        <div className="col-md-4 mb-3" key={wl._id || wl.name}>
+          <div className="card h-100 shadow-sm border-0" style={{ borderRadius: 18, overflow: 'hidden', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+            <div className="card-body d-flex flex-column">
+              <h6 className="card-title fw-bold text-truncate">{wl.name}</h6>
+              <div className="text-secondary small">{wl.movies.length} movies</div>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
