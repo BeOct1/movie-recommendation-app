@@ -75,6 +75,17 @@ function MainApp() {
     </section>
   );
 
+  // List of protected views
+  const protectedViews = [
+    'profile', 'movies', 'recommendations', 'search', 'favorites', 'watchlists', 'details'
+  ];
+
+  // If user tries to access a protected view while not authenticated, redirect to login
+  if (!isAuthenticated && protectedViews.includes(view)) {
+    setTimeout(() => setView('login'), 0);
+    return null;
+  }
+
   return (
     <div className="app-bg min-vh-100 d-flex flex-column">
       {renderHeader()}

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
 function Register() {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [message, setMessage] = useState('');
+  const { login } = useContext(AuthContext);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,10 +18,13 @@ function Register() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
+        credentials: 'include',
       });
       const data = await res.json();
-      if (res.ok) {
-        setMessage('Registration successful! You can now log in.');
+      if (res.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        login(data.user || {}, data.token);
+        setMessage('Registration successful!');
       } else {
         setMessage(data.message || 'Registration failed');
       }
