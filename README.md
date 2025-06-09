@@ -50,7 +50,7 @@ frontend/frontend/ # React frontend (create-react-app)
 ### Frontend Setup
 1. Go to the frontend directory:
    ```sh
-   cd frontend/frontend
+   cd frontend
    ```
 2. Install dependencies:
    ```sh
