@@ -1,5 +1,19 @@
 const request = require('supertest');
+const { client } = require('../server');
 const app = require('../server');
+
+beforeAll(async () => {
+  // Clean up users and favorites collections before tests
+  await client.db().collection('users').deleteMany({});
+  await client.db().collection('favorites').deleteMany({});
+});
+
+afterAll(async () => {
+  // Clean up after tests
+  await client.db().collection('users').deleteMany({});
+  await client.db().collection('favorites').deleteMany({});
+  await client.close();
+});
 
 describe('Favorites API', () => {
   let token;

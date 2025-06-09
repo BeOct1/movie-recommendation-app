@@ -1,6 +1,7 @@
 const express = require('express');
-const Review = require('../models/Review');
+const { client } = require('../server');
 const auth = require('../middleware/auth');
+const { ObjectId } = require('mongodb');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 
@@ -20,9 +21,16 @@ router.post(
     }
     const { movieId, rating, comment } = req.body;
     try {
-      const review = new Review({ user: req.user.userId, movieId, rating, comment });
-      await review.save();
-      res.status(201).json(review);
+      const reviewsCol = client.db().collection('reviews');
+      const review = {
+        user: ObjectId(req.user.userId),
+        movieId,
+        rating,
+        comment,
+        createdAt: new Date(),
+      };
+      const result = await reviewsCol.insertOne(review);
+      res.status(201).json(result.ops ? result.ops[0] : review);
     } catch (err) {
       res.status(500).json({ message: 'Error saving review' });
     }
@@ -32,7 +40,8 @@ router.post(
 // Get reviews for a movie
 router.get('/:movieId', async (req, res) => {
   try {
-    const reviews = await Review.find({ movieId: req.params.movieId }).populate('user', 'username');
+    const reviewsCol = client.db().collection('reviews');
+    const reviews = await reviewsCol.find({ movieId: req.params.movieId }).toArray();
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching reviews' });
@@ -42,7 +51,8 @@ router.get('/:movieId', async (req, res) => {
 // Get reviews by user
 router.get('/user/:userId', async (req, res) => {
   try {
-    const reviews = await Review.find({ user: req.params.userId }).populate('movieId', 'title');
+    const reviewsCol = client.db().collection('reviews');
+    const reviews = await reviewsCol.find({ user: ObjectId(req.params.userId) }).toArray();
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching user reviews' });
@@ -62,16 +72,18 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
     try {
-      const review = await Review.findById(req.params.id);
+      const reviewsCol = client.db().collection('reviews');
+      const review = await reviewsCol.findOne({ _id: ObjectId(req.params.id) });
       if (!review) return res.status(404).json({ message: 'Review not found' });
-      // Only allow the author to edit
       if (String(review.user) !== String(req.user.userId)) {
         return res.status(403).json({ message: 'Forbidden' });
       }
-      review.rating = req.body.rating;
-      review.comment = req.body.comment;
-      await review.save();
-      res.json(review);
+      await reviewsCol.updateOne(
+        { _id: ObjectId(req.params.id) },
+        { $set: { rating: req.body.rating, comment: req.body.comment } }
+      );
+      const updated = await reviewsCol.findOne({ _id: ObjectId(req.params.id) });
+      res.json(updated);
     } catch (err) {
       res.status(500).json({ message: 'Error updating review' });
     }
@@ -79,15 +91,15 @@ router.put(
 );
 
 // Delete review
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
-    const review = await Review.findById(req.params.id);
+    const reviewsCol = client.db().collection('reviews');
+    const review = await reviewsCol.findOne({ _id: ObjectId(req.params.id) });
     if (!review) return res.status(404).json({ message: 'Review not found' });
-    // Only allow the author to delete
     if (String(review.user) !== String(req.user.userId)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    await review.deleteOne();
+    await reviewsCol.deleteOne({ _id: ObjectId(req.params.id) });
     res.json({ message: 'Review deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting review' });

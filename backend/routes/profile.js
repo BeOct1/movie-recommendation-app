@@ -1,11 +1,13 @@
 const express = require('express');
-const User = require('../models/User');
+const { client } = require('../server');
 const auth = require('../middleware/auth');
+const { ObjectId } = require('mongodb');
 const router = express.Router();
 
 router.get('/', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select('-password');
+    const usersCol = client.db().collection('users');
+    const user = await usersCol.findOne({ _id: ObjectId(req.user.userId) }, { projection: { password: 0 } });
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching profile' });
@@ -15,11 +17,12 @@ router.get('/', auth, async (req, res) => {
 router.put('/', auth, async (req, res) => {
   try {
     const { username, email } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      { username, email },
-      { new: true, runValidators: true }
-    ).select('-password');
+    const usersCol = client.db().collection('users');
+    await usersCol.updateOne(
+      { _id: ObjectId(req.user.userId) },
+      { $set: { username, email } }
+    );
+    const user = await usersCol.findOne({ _id: ObjectId(req.user.userId) }, { projection: { password: 0 } });
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: 'Error updating profile' });

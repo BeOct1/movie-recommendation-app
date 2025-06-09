@@ -1,15 +1,22 @@
 const express = require('express');
-const Watchlist = require('../models/Watchlist');
+const { client } = require('../server');
 const auth = require('../middleware/auth');
+const { ObjectId } = require('mongodb');
 const router = express.Router();
 
 // Create watchlist
 router.post('/', auth, async (req, res) => {
   const { name } = req.body;
   try {
-    const wl = new Watchlist({ user: req.user.userId, name, movies: [] });
-    await wl.save();
-    res.status(201).json(wl);
+    const watchlistsCol = client.db().collection('watchlists');
+    const wl = {
+      user: ObjectId(req.user.userId),
+      name,
+      movies: [],
+      createdAt: new Date()
+    };
+    const result = await watchlistsCol.insertOne(wl);
+    res.status(201).json(result.ops ? result.ops[0] : wl);
   } catch (err) {
     res.status(500).json({ message: 'Error creating watchlist' });
   }
@@ -19,11 +26,15 @@ router.post('/', auth, async (req, res) => {
 router.post('/:id/movies', auth, async (req, res) => {
   const { movieId, title, posterPath } = req.body;
   try {
-    const wl = await Watchlist.findOne({ _id: req.params.id, user: req.user.userId });
+    const watchlistsCol = client.db().collection('watchlists');
+    const wl = await watchlistsCol.findOne({ _id: ObjectId(req.params.id), user: ObjectId(req.user.userId) });
     if (!wl) return res.status(404).json({ message: 'Watchlist not found' });
-    wl.movies.push({ movieId, title, posterPath });
-    await wl.save();
-    res.json(wl);
+    await watchlistsCol.updateOne(
+      { _id: ObjectId(req.params.id), user: ObjectId(req.user.userId) },
+      { $push: { movies: { movieId, title, posterPath } } }
+    );
+    const updated = await watchlistsCol.findOne({ _id: ObjectId(req.params.id) });
+    res.json(updated);
   } catch (err) {
     res.status(500).json({ message: 'Error adding movie to watchlist' });
   }
@@ -32,7 +43,8 @@ router.post('/:id/movies', auth, async (req, res) => {
 // Get all watchlists
 router.get('/', auth, async (req, res) => {
   try {
-    const wls = await Watchlist.find({ user: req.user.userId });
+    const watchlistsCol = client.db().collection('watchlists');
+    const wls = await watchlistsCol.find({ user: ObjectId(req.user.userId) }).toArray();
     res.json(wls);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching watchlists' });

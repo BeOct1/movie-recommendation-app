@@ -1,5 +1,17 @@
 const request = require('supertest');
+const { client } = require('../server');
 const app = require('../server');
+
+beforeAll(async () => {
+  // Clean up users collection before tests
+  await client.db().collection('users').deleteMany({});
+});
+
+afterAll(async () => {
+  // Clean up after tests
+  await client.db().collection('users').deleteMany({});
+  await client.close();
+});
 
 describe('Auth API', () => {
   it('should register a new user', async () => {

@@ -1,26 +1,40 @@
 const request = require('supertest');
+const { client } = require('../server');
 const app = require('../server');
 
-describe('Watchlists API', () => {
+beforeAll(async () => {
+  // Clean up users and reviews collections before tests
+  await client.db().collection('users').deleteMany({});
+  await client.db().collection('reviews').deleteMany({});
+});
+
+afterAll(async () => {
+  // Clean up after tests
+  await client.db().collection('users').deleteMany({});
+  await client.db().collection('reviews').deleteMany({});
+  await client.close();
+});
+
+describe('Reviews API', () => {
   let token;
   beforeAll(async () => {
-    await request(app).post('/api/auth/register').send({ username: 'watchuser', password: 'watchpass' });
-    const res = await request(app).post('/api/auth/login').send({ username: 'watchuser', password: 'watchpass' });
+    await request(app).post('/api/auth/register').send({ username: 'reviewuser', password: 'reviewpass' });
+    const res = await request(app).post('/api/auth/login').send({ username: 'reviewuser', password: 'reviewpass' });
     token = res.body.token;
   });
 
-  it('should create a watchlist', async () => {
+  it('should create a review', async () => {
     const res = await request(app)
-      .post('/api/watchlists')
+      .post('/api/reviews')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'My Watchlist' });
+      .send({ movieId: '123', content: 'Great movie!', rating: 5 });
     expect(res.statusCode).toBe(201);
-    expect(res.body.name).toBe('My Watchlist');
+    expect(res.body.content).toBe('Great movie!');
   });
 
-  it('should get watchlists', async () => {
+  it('should get reviews', async () => {
     const res = await request(app)
-      .get('/api/watchlists')
+      .get('/api/reviews')
       .set('Authorization', `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
