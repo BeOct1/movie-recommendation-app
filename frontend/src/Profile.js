@@ -9,6 +9,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-a
 function Profile() {
   const { user } = useContext(AuthContext);
   const [error, setError] = useState('');
+  const [profile, setProfile] = useState(user);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -20,7 +22,7 @@ function Profile() {
         });
         const data = await res.json();
         if (res.ok) {
-          // setUser(data); // User is now provided by AuthContext
+          setProfile(data);
         } else {
           setError(data.message || 'Failed to fetch profile');
         }
@@ -31,76 +33,77 @@ function Profile() {
     fetchProfile();
   }, []);
 
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/auth/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(profile)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Profile updated successfully');
+        // Optionally, refetch the profile or update the context
+      } else {
+        setError(data.message || 'Failed to update profile');
+      }
+    } catch (err) {
+      setError('Server error');
+    }
+  };
+
   if (error) return <div className="alert alert-danger mt-4 container" style={{maxWidth: 500}}>{error}</div>;
-  if (!user) return <div className="container mt-4">Loading profile...</div>;
+  if (!profile) return <div>Loading...</div>;
 
   return (
-    <div className="profile-container">
-      <form className="profile-form mb-4" onSubmit={handleUpdate} aria-label="Update profile">
-        <div className="row g-3 align-items-center">
-          <div className="col-md-6">
-            <label htmlFor="profile-username" className="form-label">Username</label>
-            <input
-              id="profile-username"
-              className="form-control"
-              value={profile.username}
-              onChange={e => setProfile({ ...profile, username: e.target.value })}
-              aria-label="Username"
-              required
-            />
-          </div>
-          <div className="col-md-6">
-            <label htmlFor="profile-email" className="form-label">Email</label>
-            <input
-              id="profile-email"
-              className="form-control"
-              value={profile.email}
-              onChange={e => setProfile({ ...profile, email: e.target.value })}
-              aria-label="Email"
-              required
-            />
-          </div>
-        </div>
-        <button className="btn btn-primary mt-3" type="submit" style={{ minHeight: 44, minWidth: 44 }}>Update Profile</button>
-        {message && <div className="mt-2 text-success" role="status">{message}</div>}
-      </form>
-      <div className="profile-sections-grid">
-        <section aria-label="Favorites">
-          <h5 className="fw-bold mb-2">Favorites</h5>
-          <FavoritesList compact={false} />
-        </section>
-        <section aria-label="Watchlists">
-          <h5 className="fw-bold mb-2">Watchlists</h5>
-          <Watchlists compact={false} />
-        </section>
-        <section aria-label="Reviews">
-          <h5 className="fw-bold mb-2">Reviews</h5>
-          <ReviewsList userId={profile._id} />
-        </section>
+    <form onSubmit={handleUpdate} className="profile-form" aria-label="Update profile">
+      <div className="form-group">
+        <label htmlFor="profile-username" className="form-label">Username</label>
+        <input
+          id="profile-username"
+          className="form-control"
+          value={profile.username}
+          onChange={e => setProfile({ ...profile, username: e.target.value })}
+          required
+          aria-label="Username"
+        />
       </div>
+      <div className="form-group">
+        <label htmlFor="profile-email" className="form-label">Email</label>
+        <input
+          id="profile-email"
+          className="form-control"
+          value={profile.email}
+          onChange={e => setProfile({ ...profile, email: e.target.value })}
+          required
+          aria-label="Email"
+        />
+      </div>
+      <button className="btn btn-primary mt-3" type="submit" style={{ minHeight: 44, minWidth: 44 }}>Update Profile</button>
+      {message && <div className="mt-2 text-success" role="status">{message}</div>}
       <style>{`
-        .profile-container {
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 1.5rem;
-        }
         .profile-form {
-          background: #fff;
-          border-radius: 18px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-          padding: 2rem 1.5rem;
-        }
-        .profile-sections-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 2rem;
-          margin-top: 2rem;
+          gap: 1.5rem;
+          max-width: 400px;
+          margin: 0 auto;
         }
-        @media (min-width: 900px) {
-          .profile-sections-grid {
-            grid-template-columns: repeat(3, 1fr);
+        @media (min-width: 600px) {
+          .profile-form {
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
           }
+        }
+        .form-group {
+          display: flex;
+          flex-direction: column;
         }
         .btn-primary {
           font-size: 1rem;
@@ -108,7 +111,7 @@ function Profile() {
           border-radius: 8px;
         }
       `}</style>
-    </div>
+    </form>
   );
 }
 

@@ -44,38 +44,75 @@ function MovieList() {
   }
 
   return (
-    <div className="movie-list-grid" role="list" aria-label="Movie List">
-      {movies.map(movie => (
-        <div
-          className="movie-card"
-          key={movie.id}
-          role="listitem"
-          tabIndex={0}
-          aria-label={`Movie: ${movie.title}`}
-        >
-          {movie.poster_path ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-              alt={movie.title}
-              className="card-img-top"
-              style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18, objectFit: 'cover', height: 220 }}
-            />
-          ) : (
-            <div style={{ height: 220, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
-          )}
-          <div className="card-body d-flex flex-column">
-            <h6 className="card-title fw-bold text-truncate">{movie.title}</h6>
-            <button
-              className="btn btn-sm btn-outline-primary mt-auto"
-              onClick={() => onSelect(movie)}
-              aria-label={`View details for ${movie.title}`}
-              style={{ minHeight: 44, minWidth: 44 }}
-            >
-              Details
-            </button>
-          </div>
+    <div className="container my-4">
+      {loading && <div className="text-center my-4"><div className="spinner-border text-warning" role="status"><span className="visually-hidden">Loading...</span></div></div>}
+      {error && <div className="alert alert-info mt-2">{error}</div>}
+      <h2>Movie Discovery</h2>
+      <form className="row g-2 align-items-end mb-3" onSubmit={handleSearch}>
+        <div className="col-md-3">
+          <input placeholder="Search by title" className="form-control" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-      ))}
+        <div className="col-md-2">
+          <input placeholder="Year" className="form-control" value={year} onChange={e => setYear(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <input placeholder="Min Rating" className="form-control" value={voteAverageGte} onChange={e => setVoteAverageGte(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <input placeholder="Max Rating" className="form-control" value={voteAverageLte} onChange={e => setVoteAverageLte(e.target.value)} />
+        </div>
+        <div className="col-md-2">
+          <select className="form-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+            <option value="popularity.desc">Most Popular</option>
+            <option value="release_date.desc">Newest</option>
+            <option value="vote_average.desc">Top Rated</option>
+          </select>
+        </div>
+        <div className="col-md-1">
+          <button type="submit" className="btn btn-primary w-100">Search</button>
+        </div>
+      </form>
+      <div className="movie-list-grid" role="list" aria-label="Movie List">
+        {movies.map(movie => (
+          <div
+            className="movie-card"
+            key={movie.id}
+            role="listitem"
+            tabIndex={0}
+            aria-label={`Movie: ${movie.title}`}
+          >
+            <div
+              className="card h-100 shadow-sm border-0 movie-card-hover"
+              style={{
+                borderRadius: 18,
+                overflow: 'hidden',
+                transition: 'transform 0.3s, box-shadow 0.3s',
+                cursor: 'pointer',
+                background: '#fff',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
+              }}
+              onClick={() => setSelectedMovie(movie)}
+            >
+              {movie.poster_path ? (
+                <img
+                  src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+                  alt={movie.title}
+                  className="card-img-top"
+                  style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18, objectFit: 'cover', height: 340 }}
+                />
+              ) : (
+                <div style={{ height: 340, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
+              )}
+              <div className="card-body d-flex flex-column">
+                <h5 className="card-title fw-bold" style={{ fontSize: 20 }}>{movie.title}</h5>
+                <p className="card-text text-secondary mb-1">Rating: {movie.vote_average}</p>
+                <p className="card-text text-secondary mb-2">Release: {movie.release_date}</p>
+                {/* ...other info... */}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       <style>{`
         .movie-list-grid {
           display: grid;
@@ -104,22 +141,11 @@ function MovieList() {
           cursor: pointer;
         }
         .movie-card:focus {
-          box-shadow: 0 0 0 3px #2563eb;
+          box-shadow: 0 0 0 3px #f59e42;
         }
         .movie-card:hover {
           transform: scale(1.04);
           box-shadow: 0 8px 32px rgba(0,0,0,0.13);
-        }
-        .card-body {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          padding: 1rem;
-        }
-        .btn-outline-primary {
-          font-size: 1rem;
-          padding: 0.75rem 1.25rem;
-          border-radius: 8px;
         }
       `}</style>
     </div>

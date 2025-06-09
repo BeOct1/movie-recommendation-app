@@ -38,110 +38,109 @@ function MovieSearch({ setSelectedMovie }) {
   };
 
   return (
-    <div className="movie-search-container">
-      <form className="mb-4 d-flex flex-wrap gap-2 align-items-end" onSubmit={handleSearch} aria-label="Movie search form">
-        <label htmlFor="search-query" className="visually-hidden">Search</label>
-        <input
-          id="search-query"
-          className="form-control"
-          type="text"
-          placeholder="Search movies..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          aria-label="Search movies"
-          style={{ minWidth: 180, flex: 1 }}
-        />
-        <button className="btn btn-primary" type="submit" style={{ minHeight: 44, minWidth: 44 }}>Search</button>
+    <div className="movie-search-container" aria-label="Movie Search">
+      <form className="movie-search-form row g-2 align-items-end mb-3" onSubmit={e => { e.preventDefault(); handleSearch(); }}>
+        <div className="col-md-4">
+          <div className="form-floating">
+            <input
+              className="form-control rounded-3"
+              id="searchTitle"
+              placeholder="Title"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              aria-label="Search by title"
+            />
+            <label htmlFor="searchTitle">Title</label>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="form-floating">
+            <input
+              className="form-control rounded-3"
+              id="searchYear"
+              placeholder="Year"
+              value={year}
+              onChange={e => setYear(e.target.value)}
+              type="number"
+              min="1900"
+              max={new Date().getFullYear()}
+              aria-label="Search by year"
+            />
+            <label htmlFor="searchYear">Year</label>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="form-floating">
+            <input
+              className="form-control rounded-3"
+              id="searchGenre"
+              placeholder="Genre ID"
+              value={genre}
+              onChange={e => setGenre(e.target.value)}
+              aria-label="Search by genre ID"
+            />
+            <label htmlFor="searchGenre">Genre ID</label>
+          </div>
+        </div>
+        <div className="col-md-2">
+          <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ borderRadius: 24, fontSize: 18 }} aria-label="Search">
+            {loading ? 'Searching...' : 'Search'}
+          </button>
+        </div>
       </form>
-      {loading && <div>Loading...</div>}
+      {loading && <div className="text-center my-4"><div className="spinner-border text-warning" role="status"><span className="visually-hidden">Loading...</span></div></div>}
       {message && <div className="alert alert-info mt-2">{message}</div>}
-      <div className="movie-search-grid" role="list" aria-label="Search Results">
+      <div className="row mt-3">
         {results.map(movie => (
-          <div
-            className="movie-search-card"
-            key={movie.id}
-            role="listitem"
-            tabIndex={0}
-            aria-label={`Movie: ${movie.title}`}
-          >
-            {movie.poster_path ? (
-              <img
-                src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-                alt={movie.title}
-                className="card-img-top"
-                style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18, objectFit: 'cover', height: 220 }}
-              />
-            ) : (
-              <div style={{ height: 220, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
-            )}
-            <div className="card-body d-flex flex-column">
-              <h6 className="card-title fw-bold text-truncate">{movie.title}</h6>
-              <button
-                className="btn btn-sm btn-outline-primary mt-auto"
-                onClick={() => setSelectedMovie(movie)}
-                aria-label={`View details for ${movie.title}`}
-                style={{ minHeight: 44, minWidth: 44 }}
-              >
-                Details
-              </button>
+          <div className="col-md-4 mb-3" key={movie.id}>
+            <div className="card h-100 shadow-sm border-0 movie-card-hover"
+              style={{ borderRadius: 18, overflow: 'hidden', transition: 'transform 0.3s, box-shadow 0.3s', cursor: 'pointer', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}
+              onClick={() => setSelectedMovie(movie)}
+              aria-label={`Select ${movie.title}`}
+            >
+              {movie.poster_path ? (
+                <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{ width: '100%', borderRadius: 8 }} />
+              ) : (
+                <div style={{ height: 300, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
+              )}
+              <div className="card-body d-flex flex-column">
+                <h5 className="card-title fw-bold" style={{ fontSize: 20 }}>{movie.title}</h5>
+                <p className="card-text text-secondary mb-1">Rating: {movie.vote_average}</p>
+                <p className="card-text text-secondary mb-2">Release: {movie.release_date}</p>
+              </div>
             </div>
           </div>
         ))}
       </div>
       <style>{`
-        .movie-search-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
-        }
-        @media (min-width: 600px) {
-          .movie-search-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-        @media (min-width: 900px) {
-          .movie-search-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-        .movie-search-card {
-          background: #fff;
-          border-radius: 18px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          outline: none;
-          transition: transform 0.3s, box-shadow 0.3s;
-          cursor: pointer;
-        }
-        .movie-search-card:focus {
-          box-shadow: 0 0 0 3px #2563eb;
-        }
-        .movie-search-card:hover {
+        .movie-card-hover:hover {
           transform: scale(1.04);
           box-shadow: 0 8px 32px rgba(0,0,0,0.13);
         }
-        .card-body {
+        .movie-search-container {
           display: flex;
           flex-direction: column;
-          flex: 1;
-          padding: 1rem;
+          gap: 2rem;
+          max-width: 900px;
+          margin: 0 auto;
+          padding: 1.5rem;
         }
-        .btn-outline-primary {
+        .movie-search-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        @media (min-width: 600px) {
+          .movie-search-form {
+            flex-direction: row;
+            align-items: flex-end;
+          }
+        }
+        .btn {
+          min-height: 44px;
+          min-width: 44px;
           font-size: 1rem;
-          padding: 0.75rem 1.25rem;
           border-radius: 8px;
-        }
-        .visually-hidden {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0,0,0,0);
-          border: 0;
         }
       `}</style>
     </div>
