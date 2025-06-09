@@ -2,15 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('./models/User');
 const moviesRouter = require('./routes/movies');
 const favoritesRouter = require('./routes/favorites');
 const watchlistsRouter = require('./routes/watchlists');
 const reviewsRouter = require('./routes/reviews');
 const profileRouter = require('./routes/profile');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // Load environment variables
 dotenv.config();
@@ -27,30 +26,28 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB connection
+const uri = "mongodb+srv://bitrusmail:7gXJHQGiPR9mfBab@cluster0.1sgoxgf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+const client = new MongoClient(uri, {
   serverApi: {
-    version: '1',
+    version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
   }
-})
-  .then(() => {
-    console.log('Connected to MongoDB');
-  }).catch((err) => {
-    console.error('MongoDB connection error:', err);
-  });
-
-// User schema and model
-
-const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
 });
 
-const User = mongoose.model('User', UserSchema);
+async function connectMongo() {
+  try {
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+}
+connectMongo();
+
 // Middleware to check JWT
 
 //const getHttpsConfig = require('./getHttpsConfig');
@@ -61,13 +58,13 @@ app.post('/api/auth/register', async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({ message: 'Username and password are required.' });
     }
-    const existingUser = await User.findOne({ username });
+    const usersCol = client.db().collection('users');
+    const existingUser = await usersCol.findOne({ username });
     if (existingUser) {
       return res.status(409).json({ message: 'Username already exists.' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
-    await newUser.save();
+    const result = await usersCol.insertOne({ username, password: hashedPassword });
     res.status(201).json({ message: 'User registered successfully.' });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
@@ -82,7 +79,8 @@ app.post('/api/auth/login', async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({ message: 'Username and password are required.' });
     }
-    const user = await User.findOne({ username });
+    const usersCol = client.db().collection('users');
+    const user = await usersCol.findOne({ username });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
@@ -105,7 +103,8 @@ app.get('/api/auth/profile', async (req, res) => {
   if (!token) return res.status(401).json({ message: 'No token provided' });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password');
+    const usersCol = client.db().collection('users');
+    const user = await usersCol.findOne({ _id: require('mongodb').ObjectId(decoded.userId) }, { projection: { password: 0 } });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (err) {
@@ -114,7 +113,6 @@ app.get('/api/auth/profile', async (req, res) => {
 });
 
 // Import routes
-const moviesRouter = require('./routes/movies'); 
 
 app.use('/api/movies', moviesRouter);
 app.use('/api/favorites', favoritesRouter);
@@ -126,6 +124,8 @@ app.get('/', (req, res) => {
   res.send('Express server is running!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Export app for testing and for use in start.js
+module.exports = app;
+module.exports.client = client;
+module.exports.connectMongo = connectMongo;
+// To run the server in production, use start.js

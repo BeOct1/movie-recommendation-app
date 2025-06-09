@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const Movie = require('../models/Movie');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
@@ -26,9 +25,9 @@ function authMiddleware(req, res, next) {
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { title, genre, year, description, posterUrl } = req.body;
-    const movie = new Movie({ title, genre, year, description, posterUrl });
-    await movie.save();
-    res.status(201).json(movie);
+    const moviesCol = req.app.locals.client.db().collection('movies');
+    const result = await moviesCol.insertOne({ title, genre, year, description, posterUrl });
+    res.status(201).json({ _id: result.insertedId, title, genre, year, description, posterUrl });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -41,7 +40,8 @@ router.get('/', async (req, res) => {
     let query = {};
     if (search) query.title = { $regex: search, $options: 'i' };
     if (genre) query.genre = genre;
-    const movies = await Movie.find(query);
+    const moviesCol = req.app.locals.client.db().collection('movies');
+    const movies = await moviesCol.find(query).toArray();
     res.json(movies);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -51,9 +51,10 @@ router.get('/', async (req, res) => {
 // Recommend movies (simple: random 5)
 router.get('/recommendations', authMiddleware, async (req, res) => {
   try {
-    const count = await Movie.countDocuments();
+    const moviesCol = req.app.locals.client.db().collection('movies');
+    const count = await moviesCol.countDocuments();
     const random = Math.max(0, Math.floor(Math.random() * (count - 5)));
-    const movies = await Movie.find().skip(random).limit(5);
+    const movies = await moviesCol.find().skip(random).limit(5).toArray();
     res.json(movies);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

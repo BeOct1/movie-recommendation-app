@@ -21,5 +21,8 @@
     "mongoose": "^8.15.1",
     "node-fetch": "^3.3.2"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "supertest": "^7.1.1"
+  }
 }
