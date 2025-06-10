@@ -1,5 +1,5 @@
 const express = require('express');
-const { client } = require('../server');
+const { getDb } = require('../db');
 const auth = require('../middleware/auth');
 const { ObjectId } = require('mongodb');
 const router = express.Router();
@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/', auth, async (req, res) => {
   const { movieId, title, posterPath } = req.body;
   try {
-    const favoritesCol = client.db().collection('favorites');
+    const favoritesCol = getDb().collection('favorites');
     const fav = {
       user: ObjectId(req.user.userId),
       movieId,
@@ -26,7 +26,7 @@ router.post('/', auth, async (req, res) => {
 // Get favorites
 router.get('/', auth, async (req, res) => {
   try {
-    const favoritesCol = client.db().collection('favorites');
+    const favoritesCol = getDb().collection('favorites');
     const favs = await favoritesCol.find({ user: ObjectId(req.user.userId) }).toArray();
     res.json(favs);
   } catch (err) {
@@ -37,7 +37,7 @@ router.get('/', auth, async (req, res) => {
 // Remove favorite
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const favoritesCol = client.db().collection('favorites');
+    const favoritesCol = getDb().collection('favorites');
     await favoritesCol.deleteOne({ user: ObjectId(req.user.userId), movieId: req.params.id });
     res.json({ message: 'Favorite removed' });
   } catch (err) {

@@ -1,8 +1,8 @@
 const express = require('express');
-const { client } = require('../server');
-const auth = require('../middleware/auth');
 const { ObjectId } = require('mongodb');
 const { body, validationResult } = require('express-validator');
+const auth = require('../middleware/auth');
+const { getDb } = require('../db');
 const router = express.Router();
 
 // Add review
@@ -21,7 +21,7 @@ router.post(
     }
     const { movieId, rating, comment } = req.body;
     try {
-      const reviewsCol = client.db().collection('reviews');
+      const reviewsCol = getDb().collection('reviews');
       const review = {
         user: ObjectId(req.user.userId),
         movieId,
@@ -40,7 +40,7 @@ router.post(
 // Get reviews for a movie
 router.get('/:movieId', async (req, res) => {
   try {
-    const reviewsCol = client.db().collection('reviews');
+    const reviewsCol = getDb().collection('reviews');
     const reviews = await reviewsCol.find({ movieId: req.params.movieId }).toArray();
     res.json(reviews);
   } catch (err) {
@@ -51,7 +51,7 @@ router.get('/:movieId', async (req, res) => {
 // Get reviews by user
 router.get('/user/:userId', async (req, res) => {
   try {
-    const reviewsCol = client.db().collection('reviews');
+    const reviewsCol = getDb().collection('reviews');
     const reviews = await reviewsCol.find({ user: ObjectId(req.params.userId) }).toArray();
     res.json(reviews);
   } catch (err) {
@@ -72,7 +72,7 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
     try {
-      const reviewsCol = client.db().collection('reviews');
+      const reviewsCol = getDb().collection('reviews');
       const review = await reviewsCol.findOne({ _id: ObjectId(req.params.id) });
       if (!review) return res.status(404).json({ message: 'Review not found' });
       if (String(review.user) !== String(req.user.userId)) {
@@ -93,7 +93,7 @@ router.put(
 // Delete review
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const reviewsCol = client.db().collection('reviews');
+    const reviewsCol = getDb().collection('reviews');
     const review = await reviewsCol.findOne({ _id: ObjectId(req.params.id) });
     if (!review) return res.status(404).json({ message: 'Review not found' });
     if (String(review.user) !== String(req.user.userId)) {

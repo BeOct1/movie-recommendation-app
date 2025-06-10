@@ -1,5 +1,5 @@
 const express = require('express');
-const { client } = require('../server');
+const { getDb } = require('../db');
 const auth = require('../middleware/auth');
 const { ObjectId } = require('mongodb');
 const router = express.Router();
@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/', auth, async (req, res) => {
   const { name } = req.body;
   try {
-    const watchlistsCol = client.db().collection('watchlists');
+    const watchlistsCol = getDb().collection('watchlists');
     const wl = {
       user: ObjectId(req.user.userId),
       name,
@@ -26,7 +26,7 @@ router.post('/', auth, async (req, res) => {
 router.post('/:id/movies', auth, async (req, res) => {
   const { movieId, title, posterPath } = req.body;
   try {
-    const watchlistsCol = client.db().collection('watchlists');
+    const watchlistsCol = getDb().collection('watchlists');
     const wl = await watchlistsCol.findOne({ _id: ObjectId(req.params.id), user: ObjectId(req.user.userId) });
     if (!wl) return res.status(404).json({ message: 'Watchlist not found' });
     await watchlistsCol.updateOne(
@@ -43,7 +43,7 @@ router.post('/:id/movies', auth, async (req, res) => {
 // Get all watchlists
 router.get('/', auth, async (req, res) => {
   try {
-    const watchlistsCol = client.db().collection('watchlists');
+    const watchlistsCol = getDb().collection('watchlists');
     const wls = await watchlistsCol.find({ user: ObjectId(req.user.userId) }).toArray();
     res.json(wls);
   } catch (err) {

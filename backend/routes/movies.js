@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const { client } = require('../server');
+const { getDb } = require('../db');
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ function authMiddleware(req, res, next) {
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { title, genre, year, description, posterUrl } = req.body;
-    const moviesCol = client.db().collection('movies');
+    const moviesCol = getDb().collection('movies');
     const result = await moviesCol.insertOne({ title, genre, year, description, posterUrl });
     res.status(201).json(result.ops ? result.ops[0] : { title, genre, year, description, posterUrl });
   } catch (err) {
@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
     let query = {};
     if (search) query.title = { $regex: search, $options: 'i' };
     if (genre) query.genre = genre;
-    const moviesCol = client.db().collection('movies');
+    const moviesCol = getDb().collection('movies');
     const movies = await moviesCol.find(query).toArray();
     res.json(movies);
   } catch (err) {
@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
 // Recommend movies (simple: random 5)
 router.get('/recommendations', authMiddleware, async (req, res) => {
   try {
-    const moviesCol = client.db().collection('movies');
+    const moviesCol = getDb().collection('movies');
     const count = await moviesCol.countDocuments();
     const random = Math.max(0, Math.floor(Math.random() * (count - 5)));
     const movies = await moviesCol.find().skip(random).limit(5).toArray();

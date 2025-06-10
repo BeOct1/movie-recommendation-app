@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const moviesRouter = require('./routes/movies');
@@ -9,7 +8,7 @@ const favoritesRouter = require('./routes/favorites');
 const watchlistsRouter = require('./routes/watchlists');
 const reviewsRouter = require('./routes/reviews');
 const profileRouter = require('./routes/profile');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { connectToDatabase, getDb } = require('./db');
 
 // Load environment variables
 dotenv.config();
@@ -28,32 +27,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// MongoDB connection
-const uri = "mongodb+srv://bitrusmail:7gXJHQGiPR9mfBab@cluster0.1sgoxgf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+let db;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-
-async function connectMongo() {
+(async () => {
   try {
-    await client.connect();
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    db = await connectToDatabase();
+    console.log('Connected to MongoDB');
   } catch (err) {
     console.error('MongoDB connection error:', err);
     process.exit(1);
   }
-}
-connectMongo();
+})();
 
-// Middleware to check JWT
-
-//const getHttpsConfig = require('./getHttpsConfig');
 // Registration route
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -61,14 +46,13 @@ app.post('/api/auth/register', async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({ message: 'Username and password are required.' });
     }
-    const usersCol = client.db().collection('users');
+    const usersCol = getDb().collection('users');
     const existingUser = await usersCol.findOne({ username });
     if (existingUser) {
       return res.status(409).json({ message: 'Username already exists.' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await usersCol.insertOne({ username, password: hashedPassword });
-    // Use insertedId for JWT
     const token = jwt.sign({ userId: result.insertedId.toString(), username }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ message: 'User registered successfully.', token });
   } catch (err) {
@@ -83,7 +67,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!username || !password) {
       return res.status(400).json({ message: 'Username and password are required.' });
     }
-    const usersCol = client.db().collection('users');
+    const usersCol = getDb().collection('users');
     const user = await usersCol.findOne({ username });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials.' });
@@ -92,7 +76,6 @@ app.post('/api/auth/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
-    // Use user._id as string in JWT
     const token = jwt.sign({ userId: user._id.toString(), username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
   } catch (err) {
@@ -107,7 +90,7 @@ app.get('/api/auth/profile', async (req, res) => {
   if (!token) return res.status(401).json({ message: 'No token provided' });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const usersCol = client.db().collection('users');
+    const usersCol = getDb().collection('users');
     const user = await usersCol.findOne({ _id: require('mongodb').ObjectId(decoded.userId) }, { projection: { password: 0 } });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
@@ -136,6 +119,4 @@ app.get('/', (req, res) => {
 
 // Export app for testing and for use in start.js
 module.exports = app;
-module.exports.client = client;
-module.exports.connectMongo = connectMongo;
 // To run the server in production, use start.js

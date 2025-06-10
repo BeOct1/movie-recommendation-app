@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const crypto = require('crypto');
-const User = require('../models/User');
+const { getDb } = require('../db');
+const { ObjectId } = require('mongodb');
 
 const router = express.Router();
 
@@ -25,39 +26,29 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     try {
-      console.log('Register request body:', req.body);
-
       const { username, email, password } = req.body;
       if (!username || !email || !password) {
-        console.log('Missing username, email, or password');
         return res.status(400).json({ message: 'All fields required' });
       }
-
-      const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+      const usersCol = getDb().collection('users');
+      const existingUser = await usersCol.findOne({ $or: [{ username }, { email }] });
       if (existingUser) {
-        console.log('Username or email already exists');
         return res.status(409).json({ message: 'Username or email already exists' });
       }
-
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new User({ username, email, password: hashedPassword });
-      await user.save();
-      // Issue tokens
+      const result = await usersCol.insertOne({ username, email, password: hashedPassword, refreshTokens: [] });
+      const user = result.ops ? result.ops[0] : { _id: result.insertedId, username, email, refreshTokens: [] };
       const accessToken = jwt.sign(
-        { userId: user._id, username: user.username, email: user.email },
+        { userId: user._id.toString(), username: user.username, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
       );
       const refreshToken = generateRefreshToken();
-      user.refreshTokens = user.refreshTokens || [];
-      user.refreshTokens.push(refreshToken);
-      await user.save();
+      await usersCol.updateOne({ _id: user._id }, { $push: { refreshTokens: refreshToken } });
       res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production', maxAge: 7*24*60*60*1000 });
       res.status(201).json({ message: 'User registered successfully', token: accessToken, user: { username: user.username, email: user.email, _id: user._id } });
     } catch (err) {
-      console.error('Registration error:', err);
       res.status(500).json({ message: 'Server error' });
     }
   }
@@ -75,10 +66,10 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     try {
       const { email, password } = req.body;
-      const user = await User.findOne({ email });
+      const usersCol = getDb().collection('users');
+      const user = await usersCol.findOne({ email });
       if (!user) {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
@@ -86,16 +77,13 @@ router.post(
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
-      // Issue tokens
       const accessToken = jwt.sign(
-        { userId: user._id, username: user.username, email: user.email },
+        { userId: user._id.toString(), username: user.username, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
       );
       const refreshToken = generateRefreshToken();
-      user.refreshTokens = user.refreshTokens || [];
-      user.refreshTokens.push(refreshToken);
-      await user.save();
+      await usersCol.updateOne({ _id: user._id }, { $push: { refreshTokens: refreshToken } });
       res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production', maxAge: 7*24*60*60*1000 });
       res.json({ token: accessToken, user: { username: user.username, email: user.email, _id: user._id } });
     } catch (err) {
@@ -110,13 +98,13 @@ router.post('/refresh', async (req, res) => {
   if (!refreshToken) {
     return res.status(401).json({ message: 'No refresh token' });
   }
-  // Find user with this refresh token
-  const user = await User.findOne({ refreshTokens: refreshToken });
+  const usersCol = getDb().collection('users');
+  const user = await usersCol.findOne({ refreshTokens: refreshToken });
   if (!user) {
     return res.status(401).json({ message: 'Invalid refresh token' });
   }
   const accessToken = jwt.sign(
-    { userId: user._id, username: user.username, email: user.email },
+    { userId: user._id.toString(), username: user.username, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
@@ -127,8 +115,8 @@ router.post('/refresh', async (req, res) => {
 router.post('/logout', async (req, res) => {
   const { refreshToken } = req.cookies;
   if (refreshToken) {
-    // Remove refresh token from user's array
-    await User.updateOne({ refreshTokens: refreshToken }, { $pull: { refreshTokens: refreshToken } });
+    const usersCol = getDb().collection('users');
+    await usersCol.updateOne({ refreshTokens: refreshToken }, { $pull: { refreshTokens: refreshToken } });
     res.clearCookie('refreshToken');
   }
   res.json({ message: 'Logged out' });

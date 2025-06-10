@@ -1,12 +1,12 @@
 const express = require('express');
-const { client } = require('../server');
+const { getDb } = require('../db');
 const auth = require('../middleware/auth');
 const { ObjectId } = require('mongodb');
 const router = express.Router();
 
 router.get('/', auth, async (req, res) => {
   try {
-    const usersCol = client.db().collection('users');
+    const usersCol = getDb().collection('users');
     const user = await usersCol.findOne({ _id: ObjectId(req.user.userId) }, { projection: { password: 0 } });
     res.json(user);
   } catch (err) {
@@ -17,7 +17,7 @@ router.get('/', auth, async (req, res) => {
 router.put('/', auth, async (req, res) => {
   try {
     const { username, email } = req.body;
-    const usersCol = client.db().collection('users');
+    const usersCol = getDb().collection('users');
     await usersCol.updateOne(
       { _id: ObjectId(req.user.userId) },
       { $set: { username, email } }
