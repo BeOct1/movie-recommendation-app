@@ -130,3 +130,13 @@ export async function deleteReview(id) {
     throw handleApiError(error);
   }
 }
+
+// --- MOVIES ---
+export async function searchMovies(params) {
+  try {
+    const { data } = await api.get('/movies/search', { params });
+    return data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}

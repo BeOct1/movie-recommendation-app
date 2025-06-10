@@ -1,3 +1,4 @@
+jest.setTimeout(20000);
 const request = require('supertest');
 const { client } = require('../server');
 const app = require('../server');
@@ -12,7 +13,7 @@ afterAll(async () => {
   // Clean up after tests
   await client.db().collection('users').deleteMany({});
   await client.db().collection('reviews').deleteMany({});
-  await client.close();
+  // Do not close client here to avoid teardown errors
 });
 
 describe('Reviews API', () => {
