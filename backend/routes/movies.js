@@ -49,14 +49,50 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Recommend movies (simple: random 5)
+// Recommend movies (personalized)
 router.get('/recommendations', authMiddleware, async (req, res) => {
   try {
-    const moviesCol = getDb().collection('movies');
-    const count = await moviesCol.countDocuments();
-    const random = Math.max(0, Math.floor(Math.random() * (count - 5)));
-    const movies = await moviesCol.find().skip(random).limit(5).toArray();
-    res.json(movies);
+    const db = getDb();
+    const userId = req.user.userId;
+    // 1. Get user's favorites, watchlists, and reviews
+    const [favorites, watchlists, reviews] = await Promise.all([
+      db.collection('favorites').find({ user: require('mongodb').ObjectId(userId) }).toArray(),
+      db.collection('watchlists').find({ user: require('mongodb').ObjectId(userId) }).toArray(),
+      db.collection('reviews').find({ user: require('mongodb').ObjectId(userId) }).toArray(),
+    ]);
+    // 2. Collect all movieIds the user interacted with
+    const favIds = favorites.map(f => f.movieId);
+    const watchlistIds = watchlists.flatMap(wl => (wl.movies || []).map(m => m.movieId));
+    const reviewIds = reviews.map(r => r.movieId);
+    const userMovieIds = Array.from(new Set([...favIds, ...watchlistIds, ...reviewIds]));
+    // 3. Get genres of these movies
+    const moviesCol = db.collection('movies');
+    const userMovies = await moviesCol.find({ _id: { $in: userMovieIds.map(id => isNaN(id) ? id : parseInt(id)) } }).toArray();
+    const genres = Array.from(new Set(userMovies.flatMap(m => m.genre ? [m.genre] : [])));
+    // 4. Recommend movies with similar genres, not already seen
+    let recQuery = {};
+    if (genres.length > 0) {
+      recQuery.genre = { $in: genres };
+    }
+    if (userMovieIds.length > 0) {
+      recQuery._id = { $nin: userMovieIds.map(id => isNaN(id) ? id : parseInt(id)) };
+    }
+    let recommendations = await moviesCol.find(recQuery).limit(10).toArray();
+    // If not enough, fill with random
+    if (recommendations.length < 5) {
+      const count = await moviesCol.countDocuments();
+      const random = Math.max(0, Math.floor(Math.random() * (count - 5)));
+      const randomMovies = await moviesCol.find().skip(random).limit(5).toArray();
+      recommendations = recommendations.concat(randomMovies.filter(m => !userMovieIds.includes(m._id)));
+    }
+    // Remove duplicates
+    const seen = new Set();
+    const uniqueRecs = recommendations.filter(m => {
+      if (seen.has(m._id)) return false;
+      seen.add(m._id);
+      return true;
+    });
+    res.json(uniqueRecs.slice(0, 5));
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

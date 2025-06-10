@@ -5,6 +5,9 @@ const { body, validationResult } = require('express-validator');
 const crypto = require('crypto');
 const { getDb } = require('../db');
 const { ObjectId } = require('mongodb');
+const passport = require('passport');
+const FacebookStrategy = require('passport-facebook').Strategy;
+const GitHubStrategy = require('passport-github2').Strategy;
 
 const router = express.Router();
 
@@ -120,6 +123,108 @@ router.post('/logout', async (req, res) => {
     res.clearCookie('refreshToken');
   }
   res.json({ message: 'Logged out' });
+});
+
+// Facebook OAuth
+passport.use(new FacebookStrategy({
+  clientID: process.env.FACEBOOK_CLIENT_ID,
+  clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+  callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+  profileFields: ['id', 'emails', 'name', 'displayName', 'photos']
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    const usersCol = getDb().collection('users');
+    let user = await usersCol.findOne({ facebookId: profile.id });
+    if (!user) {
+      // Try to find by email
+      const email = profile.emails && profile.emails[0] && profile.emails[0].value;
+      user = await usersCol.findOne({ email });
+      if (user) {
+        await usersCol.updateOne({ _id: user._id }, { $set: { facebookId: profile.id } });
+      } else {
+        user = {
+          username: profile.displayName || profile.username || profile.id,
+          email: email || `${profile.id}@facebook.com`,
+          facebookId: profile.id,
+          refreshTokens: []
+        };
+        const result = await usersCol.insertOne(user);
+        user._id = result.insertedId;
+      }
+    }
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
+}));
+
+// GitHub OAuth
+passport.use(new GitHubStrategy({
+  clientID: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  callbackURL: process.env.GITHUB_CALLBACK_URL,
+  scope: ['user:email']
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    const usersCol = getDb().collection('users');
+    let user = await usersCol.findOne({ githubId: profile.id });
+    if (!user) {
+      // Try to find by email
+      let email = null;
+      if (profile.emails && profile.emails.length > 0) {
+        email = profile.emails[0].value;
+      }
+      user = await usersCol.findOne({ email });
+      if (user) {
+        await usersCol.updateOne({ _id: user._id }, { $set: { githubId: profile.id } });
+      } else {
+        user = {
+          username: profile.username || profile.displayName || profile.id,
+          email: email || `${profile.id}@github.com`,
+          githubId: profile.id,
+          refreshTokens: []
+        };
+        const result = await usersCol.insertOne(user);
+        user._id = result.insertedId;
+      }
+    }
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
+}));
+
+// Facebook OAuth endpoints
+router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+router.get('/facebook/callback', passport.authenticate('facebook', { session: false, failureRedirect: '/login' }), async (req, res) => {
+  const user = req.user;
+  const accessToken = jwt.sign(
+    { userId: user._id.toString(), username: user.username, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+  const refreshToken = generateRefreshToken();
+  const usersCol = getDb().collection('users');
+  await usersCol.updateOne({ _id: user._id }, { $push: { refreshTokens: refreshToken } });
+  res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production', maxAge: 7*24*60*60*1000 });
+  // For SPA: redirect with token in query or as JSON
+  res.redirect(`${process.env.OAUTH_REDIRECT_URL}?token=${accessToken}`);
+});
+
+// GitHub OAuth endpoints
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+router.get('/github/callback', passport.authenticate('github', { session: false, failureRedirect: '/login' }), async (req, res) => {
+  const user = req.user;
+  const accessToken = jwt.sign(
+    { userId: user._id.toString(), username: user.username, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+  const refreshToken = generateRefreshToken();
+  const usersCol = getDb().collection('users');
+  await usersCol.updateOne({ _id: user._id }, { $push: { refreshTokens: refreshToken } });
+  res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production', maxAge: 7*24*60*60*1000 });
+  res.redirect(`${process.env.OAUTH_REDIRECT_URL}?token=${accessToken}`);
 });
 
 module.exports = router;
