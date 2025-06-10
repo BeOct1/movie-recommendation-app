@@ -95,7 +95,6 @@ function MainApp() {
               <span>Videos</span>
               <span>Similar Movies</span>
             </nav>
-            <span className="modern-hero-login" onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}>Login / Sign in</span>
           </div>
           <div className="modern-hero-main">
             <h1 className="modern-hero-title">Dune</h1>
