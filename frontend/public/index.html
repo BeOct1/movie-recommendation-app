@@ -20,6 +20,16 @@
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="root"></div>
+  <script>
+    // Listen for OAuth redirect and post token to opener
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('token')) {
+        window.opener && window.opener.postMessage({ token: params.get('token') }, '*');
+        window.close();
+      }
+    })();
+  </script>
 </body>
 
 </html>

@@ -91,12 +91,38 @@ function Login({ onLogin }) {
     notify('Google login failed', 'error');
   };
 
+  // Helper for OAuth popup
+  const handleOAuthLogin = (provider) => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const width = 500, height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const url = `${apiUrl}/api/auth/${provider}`;
+    const popup = window.open(url, `${provider}Login`, `width=${width},height=${height},left=${left},top=${top}`);
+    if (!popup) {
+      notify('Popup blocked. Please allow popups and try again.', 'error');
+      return;
+    }
+    // Listen for message from popup
+    const handleMessage = (event) => {
+      if (!event.data || !event.data.token) return;
+      localStorage.setItem('token', event.data.token);
+      login(event.data.user || {}, event.data.token);
+      setMessage(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login successful!`);
+      notify(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login successful!`, 'success');
+      if (onLogin) onLogin();
+      window.removeEventListener('message', handleMessage);
+      popup.close();
+    };
+    window.addEventListener('message', handleMessage);
+  };
+
   const handleFacebookLogin = () => {
-    notify('Facebook login is not yet implemented.', 'info');
+    handleOAuthLogin('facebook');
   };
 
   const handleGithubLogin = () => {
-    notify('GitHub login is not yet implemented.', 'info');
+    handleOAuthLogin('github');
   };
 
   return (
