@@ -9,9 +9,6 @@ const watchlistsRouter = require('./routes/watchlists');
 const reviewsRouter = require('./routes/reviews');
 const profileRouter = require('./routes/profile');
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
