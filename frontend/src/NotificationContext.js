@@ -7,18 +7,26 @@ export function useNotification() {
 }
 
 export function NotificationProvider({ children }) {
-  const [notification, setNotification] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const showNotification = useCallback((message, type = 'info', timeout = 3000) => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), timeout);
+    const id = Date.now() + Math.random();
+    setNotifications((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setNotifications((prev) => prev.filter(n => n.id !== id)), timeout);
   }, []);
-
+  const dismissNotification = (id) => {
+    setNotifications((prev) => prev.filter(n => n.id !== id));
+  };
   return (
     <NotificationContext.Provider value={showNotification}>
       {children}
-      {notification && (
-        <div className={`toast-notification toast-${notification.type}`}>{notification.message}</div>
-      )}
+      <div className="toast-history-container">
+        {notifications.map(n => (
+          <div key={n.id} className={`toast-notification toast-${n.type}`}> 
+            {n.message}
+            <button className="toast-dismiss-btn" onClick={() => dismissNotification(n.id)} aria-label="Dismiss notification">&times;</button>
+          </div>
+        ))}
+      </div>
     </NotificationContext.Provider>
   );
 }

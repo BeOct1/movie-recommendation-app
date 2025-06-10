@@ -334,25 +334,46 @@ button[disabled], .btn[disabled] {
 }
 
 /* Toast Notifications */
-.toast-notification {
+.toast-history-container {
   position: fixed;
   top: 2rem;
   right: 2rem;
   z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.toast-notification {
   background: #23243a;
   color: #fff;
-  padding: 1rem 2rem;
+  padding: 1rem 2rem 1rem 1.5rem;
   border-radius: 1rem;
   box-shadow: 0 4px 24px rgba(0,0,0,0.18);
   font-size: 1.1rem;
   font-weight: 600;
   opacity: 0.97;
   transition: opacity 0.3s;
+  position: relative;
+  min-width: 220px;
 }
 .toast-success { background: #198754; color: #fff; }
 .toast-error { background: #dc3545; color: #fff; }
 .toast-info { background: #23243a; color: #ffc107; }
-
+.toast-dismiss-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.toast-dismiss-btn:hover {
+  opacity: 1;
+}
 @media (max-width: 700px) {
   .modern-hero-card {
     min-height: 340px;
@@ -376,11 +397,14 @@ button[disabled], .btn[disabled] {
     min-width: 0;
     max-width: 98vw;
   }
-  .toast-notification {
+  .toast-history-container {
     top: 1rem;
     right: 1rem;
-    padding: 0.7rem 1.2rem;
+  }
+  .toast-notification {
+    padding: 0.7rem 1.2rem 0.7rem 1rem;
     font-size: 1rem;
+    min-width: 0;
   }
 }
 
@@ -406,4 +430,22 @@ button[disabled], .btn[disabled] {
 }
 .theme-toggle-btn:focus {
   outline: 2px solid var(--color-primary);
+}
+
+/* Social login button best practices */
+.react-social-login-button {
+  border-radius: 24px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  min-height: 48px;
+  margin-bottom: 0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.react-social-login-button:focus {
+  outline: 2px solid #ffc107 !important;
+  box-shadow: 0 0 0 2px #ffc10733 !important;
+}
+.react-social-login-button:hover {
+  filter: brightness(0.97);
 }

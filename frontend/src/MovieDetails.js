@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { addFavorite, removeFavorite, addMovieToWatchlist, getUserReviews, addReview } from './api';
 import { AuthContext } from './AuthContext';
+import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, WhatsappIcon } from 'react-share';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
@@ -63,6 +64,10 @@ function MovieDetails({ movieId, onBack }) {
     }
   };
 
+  // Find trailer from TMDB videos
+  const trailer = movie?.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+  const shareUrl = window.location.href;
+
   if (!movie) return <div className="text-center mt-5">Select a movie to see details.</div>;
 
   return (
@@ -91,6 +96,26 @@ function MovieDetails({ movieId, onBack }) {
           <div className="mb-4 d-flex gap-3">
             <button className={`btn ${isFavorite ? 'btn-danger' : 'btn-outline-danger'}`} onClick={handleFavorite} disabled={loading} aria-pressed={isFavorite} aria-label="Add to favorites">{isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</button>
             <button className={`btn ${inWatchlist ? 'btn-success' : 'btn-outline-success'}`} onClick={handleAddToWatchlist} disabled={loading} aria-pressed={inWatchlist} aria-label="Add to watchlist">{inWatchlist ? 'In Watchlist' : 'Add to Watchlist'}</button>
+          </div>
+          {trailer && (
+            <div className="mb-4">
+              <h5>Trailer</h5>
+              <div className="ratio ratio-16x9 mb-2">
+                <iframe
+                  src={`https://www.youtube.com/embed/${trailer.key}`}
+                  title="Movie Trailer"
+                  allowFullScreen
+                  style={{ borderRadius: 12, width: '100%' }}
+                />
+              </div>
+            </div>
+          )}
+          <div className="mb-4 d-flex gap-3 align-items-center">
+            <span>Share:</span>
+            <FacebookShareButton url={shareUrl}><FacebookIcon size={32} round /></FacebookShareButton>
+            <TwitterShareButton url={shareUrl}><TwitterIcon size={32} round /></TwitterShareButton>
+            <WhatsappShareButton url={shareUrl}><WhatsappIcon size={32} round /></WhatsappShareButton>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => {navigator.clipboard.writeText(shareUrl)}}>Copy Link</button>
           </div>
         </div>
       </div>

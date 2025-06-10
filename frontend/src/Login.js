@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import { useNotification } from './NotificationContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { FacebookLoginButton, GithubLoginButton } from 'react-social-login-buttons';
 
 function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -45,6 +46,10 @@ function Login({ onLogin }) {
         setMessage('Login successful!');
         notify('Login successful!', 'success');
         if (onLogin) onLogin();
+      } else if (data.errors && Array.isArray(data.errors)) {
+        // Show all validation errors from backend
+        data.errors.forEach(err => notify(err.msg || err.message, 'error'));
+        setMessage(data.message || 'Login failed');
       } else {
         setMessage(data.message || 'Login failed');
         notify(data.message || 'Login failed', 'error');
@@ -84,6 +89,14 @@ function Login({ onLogin }) {
   };
   const handleGoogleError = () => {
     notify('Google login failed', 'error');
+  };
+
+  const handleFacebookLogin = () => {
+    notify('Facebook login is not yet implemented.', 'info');
+  };
+
+  const handleGithubLogin = () => {
+    notify('GitHub login is not yet implemented.', 'info');
   };
 
   return (
@@ -128,12 +141,18 @@ function Login({ onLogin }) {
       </div>
       <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ fontSize: 18, borderRadius: 24, transition: 'box-shadow 0.3s' }} disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
       <div className="text-center my-2 text-secondary">or</div>
-      <div className="d-flex justify-content-center">
+      <div className="d-flex justify-content-center flex-column gap-2">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
           width="100%"
         />
+        <FacebookLoginButton onClick={handleFacebookLogin} style={{ width: '100%' }}>
+          Continue with Facebook
+        </FacebookLoginButton>
+        <GithubLoginButton onClick={handleGithubLogin} style={{ width: '100%' }}>
+          Continue with GitHub
+        </GithubLoginButton>
       </div>
       {message && <div className="alert alert-info mt-3" aria-live="polite">{message}</div>}
     </form>

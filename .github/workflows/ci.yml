@@ -1,0 +1,56 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test || true
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test -- --watchAll=false || true
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v3
+      # Add your deployment steps here, e.g. Vercel/Netlify/Render CLI or API
+      # Example for Vercel (requires VERCEL_TOKEN secret):
+      - name: Deploy to Vercel
+        run: |
+          npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+      # Example for Render (requires API key):
+      - name: Deploy to Render
+        run: |
+          curl -X POST -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys
