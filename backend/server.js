@@ -19,8 +19,8 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors({
   origin: [
-    'https://tangerine-lollipop-a24f3d.netlify.app',
-    'http://localhost:3000'
+    'movie-recommendation-fu9npnm5g-edwards-projects-0bb04786.vercel.app',
+    'http://localhost:5000'
   ]
 }));
 app.use(express.json());
