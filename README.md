@@ -50,7 +50,7 @@ frontend/frontend/ # React frontend (create-react-app)
 ### Frontend Setup
 1. Go to the frontend directory:
    ```sh
-   cd frontend/frontend
+   cd frontend
    ```
 2. Install dependencies:
    ```sh
@@ -73,4 +73,4 @@ The frontend will run on `http://localhost:3000` by default and the backend on `
 - Update the frontend API URLs if your backend runs on a different host/port.
 
 ## License
-MIT
+No licensing 
