@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import { useNotification } from './NotificationContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -55,6 +56,36 @@ function Login({ onLogin }) {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+      const data = await res.json();
+      setLoading(false);
+      if (res.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        login(data.user || {}, data.token);
+        setMessage('Login successful!');
+        notify('Login successful!', 'success');
+        if (onLogin) onLogin();
+      } else {
+        setMessage(data.message || 'Google login failed');
+        notify(data.message || 'Google login failed', 'error');
+      }
+    } catch (err) {
+      setMessage('Server error');
+      notify('Server error', 'error');
+      setLoading(false);
+    }
+  };
+  const handleGoogleError = () => {
+    notify('Google login failed', 'error');
+  };
+
   return (
     <form onSubmit={handleSubmit} className="needs-validation" noValidate style={{ gap: 24, display: 'flex', flexDirection: 'column' }} aria-label="Login Form">
       <div className="form-floating mb-3">
@@ -96,6 +127,14 @@ function Login({ onLogin }) {
         <button type="button" className="ms-auto small text-warning btn btn-link p-0" style={{ textDecoration: 'underline' }} aria-label="Forgot Password">Forgot Password?</button>
       </div>
       <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ fontSize: 18, borderRadius: 24, transition: 'box-shadow 0.3s' }} disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
+      <div className="text-center my-2 text-secondary">or</div>
+      <div className="d-flex justify-content-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          width="100%"
+        />
+      </div>
       {message && <div className="alert alert-info mt-3" aria-live="polite">{message}</div>}
     </form>
   );
