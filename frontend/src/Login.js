@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from './AuthContext';
+import { useNotification } from './NotificationContext';
 
 function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -8,6 +9,7 @@ function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
+  const notify = useNotification();
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -38,15 +40,17 @@ function Login({ onLogin }) {
       setLoading(false);
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
-        // Optionally, fetch user profile here or use data.user if returned
         login(data.user || {}, data.token);
         setMessage('Login successful!');
+        notify('Login successful!', 'success');
         if (onLogin) onLogin();
       } else {
         setMessage(data.message || 'Login failed');
+        notify(data.message || 'Login failed', 'error');
       }
     } catch (err) {
       setMessage('Server error');
+      notify('Server error', 'error');
       setLoading(false);
     }
   };

@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from './AuthContext';
+import { useNotification } from './NotificationContext';
 
 function Register() {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
@@ -8,6 +9,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
+  const notify = useNotification();
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -42,11 +44,14 @@ function Register() {
         localStorage.setItem('token', data.token);
         login(data.user || {}, data.token);
         setMessage('Registration successful!');
+        notify('Registration successful!', 'success');
       } else {
         setMessage(data.message || 'Registration failed');
+        notify(data.message || 'Registration failed', 'error');
       }
     } catch (err) {
       setMessage('Server error');
+      notify('Server error', 'error');
       setLoading(false);
     }
   };

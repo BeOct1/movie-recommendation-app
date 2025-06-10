@@ -10,6 +10,7 @@ import FavoritesList from './FavoritesList';
 import Watchlists from './Watchlists';
 import { AuthProvider, AuthContext } from './AuthContext';
 import { MovieCacheProvider } from './MovieCacheContext';
+import { NotificationProvider } from './NotificationContext';
 import AuthModal from './AuthModal';
 import './App.css';
 
@@ -24,7 +25,7 @@ function App() {
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
-    <>
+    <NotificationProvider>
       <button className="theme-toggle-btn" onClick={toggleTheme} aria-label="Toggle dark/light mode">
         {theme === 'dark' ? '🌞' : '🌙'}
       </button>
@@ -33,7 +34,7 @@ function App() {
           <MainApp />
         </MovieCacheProvider>
       </AuthProvider>
-    </>
+    </NotificationProvider>
   );
 }
 
@@ -50,7 +51,7 @@ function MainApp() {
       <div className="container d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-2">
           <img src="/favicon.ico" alt="Logo" className="modern-logo" />
-          <span className="modern-title">MovieRec</span>
+          <span className="modern-title">Movie Recommendations App</span>
         </div>
         <nav className="modern-nav">
           {isAuthenticated ? (

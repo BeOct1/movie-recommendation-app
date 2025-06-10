@@ -333,7 +333,26 @@ button[disabled], .btn[disabled] {
   cursor: not-allowed;
 }
 
-/* Responsive adjustments */
+/* Toast Notifications */
+.toast-notification {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 3000;
+  background: #23243a;
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  font-size: 1.1rem;
+  font-weight: 600;
+  opacity: 0.97;
+  transition: opacity 0.3s;
+}
+.toast-success { background: #198754; color: #fff; }
+.toast-error { background: #dc3545; color: #fff; }
+.toast-info { background: #23243a; color: #ffc107; }
+
 @media (max-width: 700px) {
   .modern-hero-card {
     min-height: 340px;
@@ -356,6 +375,12 @@ button[disabled], .btn[disabled] {
     padding: 1.2rem 0.7rem 1.2rem 0.7rem;
     min-width: 0;
     max-width: 98vw;
+  }
+  .toast-notification {
+    top: 1rem;
+    right: 1rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
   }
 }
 
