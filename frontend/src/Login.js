@@ -4,15 +4,26 @@ import { AuthContext } from './AuthContext';
 function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
   const { login } = useContext(AuthContext);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const validate = () => {
+    const errs = {};
+    if (!form.email) errs.email = 'Email is required';
+    if (!form.password) errs.password = 'Password is required';
+    return errs;
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setMessage('');
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/login`, {
         method: 'POST',
@@ -40,7 +51,7 @@ function Login({ onLogin }) {
       <div className="form-floating mb-3">
         <input
           type="email"
-          className="form-control rounded-3"
+          className={`form-control rounded-3${errors.email ? ' is-invalid' : ''}`}
           id="loginEmail"
           name="email"
           placeholder="Email"
@@ -49,11 +60,12 @@ function Login({ onLogin }) {
           required
         />
         <label htmlFor="loginEmail">Email address</label>
+        {errors.email && <div className="invalid-feedback">{errors.email}</div>}
       </div>
       <div className="form-floating mb-3">
         <input
           type="password"
-          className="form-control rounded-3"
+          className={`form-control rounded-3${errors.password ? ' is-invalid' : ''}`}
           id="loginPassword"
           name="password"
           placeholder="Password"
@@ -62,6 +74,7 @@ function Login({ onLogin }) {
           required
         />
         <label htmlFor="loginPassword">Password</label>
+        {errors.password && <div className="invalid-feedback">{errors.password}</div>}
       </div>
       <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ fontSize: 18, borderRadius: 24, transition: 'box-shadow 0.3s' }}>Login</button>
       {message && <div className="alert alert-info mt-3">{message}</div>}
