@@ -1,8 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
-import FavoritesList from './FavoritesList';
-import Watchlists from './Watchlists';
-import ReviewsList from './ReviewsList';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
@@ -11,6 +8,8 @@ function Profile() {
   const [error, setError] = useState('');
   const [profile, setProfile] = useState(user);
   const [message, setMessage] = useState('');
+  const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -33,10 +32,23 @@ function Profile() {
     fetchProfile();
   }, []);
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatar(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     if (!token) return;
+    let updatedProfile = { ...profile };
+    if (avatar) {
+      // Simulate upload: in production, upload to S3/Cloudinary and save URL
+      updatedProfile.avatarUrl = avatarPreview;
+    }
     try {
       const res = await fetch(`${API_URL}/api/auth/profile`, {
         method: 'PUT',
@@ -44,12 +56,12 @@ function Profile() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(updatedProfile)
       });
       const data = await res.json();
       if (res.ok) {
         setMessage('Profile updated successfully');
-        // Optionally, refetch the profile or update the context
+        setProfile(data);
       } else {
         setError(data.message || 'Failed to update profile');
       }
@@ -63,6 +75,24 @@ function Profile() {
 
   return (
     <form onSubmit={handleUpdate} className="profile-form" aria-label="Update profile">
+      <div className="form-group" style={{ alignItems: 'center' }}>
+        <label htmlFor="profile-avatar" className="form-label">Avatar</label>
+        <input
+          id="profile-avatar"
+          type="file"
+          accept="image/*"
+          className="form-control"
+          onChange={handleAvatarChange}
+          aria-label="Avatar"
+        />
+        <div style={{ marginTop: 8 }}>
+          <img
+            src={avatarPreview || profile.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.username)}
+            alt="Avatar Preview"
+            style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid #ffc107' }}
+          />
+        </div>
+      </div>
       <div className="form-group">
         <label htmlFor="profile-username" className="form-label">Username</label>
         <input

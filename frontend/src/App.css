@@ -1,3 +1,17 @@
+:root {
+  --color-bg: #23243a;
+  --color-bg-alt: #181926;
+  --color-text: #fff;
+  --color-primary: #ffc107;
+  --color-accent: #2563eb;
+}
+[data-theme="light"] {
+  --color-bg: #f8fafc;
+  --color-bg-alt: #fff;
+  --color-text: #23243a;
+  --color-primary: #ffc107;
+  --color-accent: #2563eb;
+}
 .App {
   text-align: center;
 }
@@ -39,38 +53,38 @@
 
 /* App.css */
 .app-bg {
-  background: linear-gradient(135deg, #23243a 0%, #181926 100%);
-  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 .auth-card {
-  background: #23243a;
+  background: var(--color-bg-alt);
   border-radius: 2rem;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  color: #fff;
+  color: var(--color-text);
 }
 .auth-card input, .auth-card .form-control {
-  background: #23243a;
-  color: #fff;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
   border: 1px solid #444;
 }
 .auth-card input:focus, .auth-card .form-control:focus {
-  background: #23243a;
-  color: #fff;
-  border-color: #ffc107;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 0.2rem rgba(255,193,7,.25);
 }
 .auth-card .btn-warning, .auth-card .btn-outline-warning {
-  background: #ffc107;
-  color: #23243a;
+  background: var(--color-primary);
+  color: var(--color-bg-alt);
   border: none;
   font-weight: bold;
 }
 .auth-card .btn-warning:hover, .auth-card .btn-outline-warning:hover {
   background: #ffb300;
-  color: #23243a;
+  color: var(--color-bg-alt);
 }
 .auth-card .btn-link.text-warning {
-  color: #ffc107;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 .auth-card .btn-link.text-warning:hover {
@@ -87,7 +101,7 @@ footer {
 
 /* Modern Netflix-style header */
 .modern-header {
-  background: #181926;
+  background: var(--color-bg-alt);
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 0.5rem 0;
   margin-bottom: 24px;
@@ -111,7 +125,7 @@ footer {
   margin-left: 8px;
 }
 .modern-nav .btn-link:hover {
-  color: #ffc107;
+  color: var(--color-primary);
 }
 
 /* Hero Section */
@@ -125,7 +139,7 @@ footer {
 }
 .modern-hero-card {
   position: relative;
-  background: #23243a;
+  background: var(--color-bg-alt);
   border-radius: 2.5rem;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   overflow: hidden;
@@ -178,7 +192,7 @@ footer {
   transition: color 0.2s;
 }
 .modern-hero-login:hover {
-  color: #ffc107;
+  color: var(--color-primary);
 }
 .modern-hero-main {
   margin-bottom: 1.5rem;
@@ -263,10 +277,10 @@ footer {
   justify-content: center;
 }
 .auth-modal-card {
-  background: #23243a;
+  background: var(--color-bg-alt);
   border-radius: 2rem;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  color: #fff;
+  color: var(--color-text);
   padding: 2.5rem 2rem 2rem 2rem;
   position: relative;
   min-width: 320px;
@@ -343,4 +357,28 @@ button[disabled], .btn[disabled] {
     min-width: 0;
     max-width: 98vw;
   }
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 3000;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.theme-toggle-btn:focus {
+  outline: 2px solid var(--color-primary);
 }
