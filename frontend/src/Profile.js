@@ -2,6 +2,9 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
+// Cloudinary upload preset and URL (replace with your own if available)
+const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/demo/image/upload';
+const CLOUDINARY_UPLOAD_PRESET = 'docs_upload_example_us_preset';
 
 function Profile() {
   const { user } = useContext(AuthContext);
@@ -32,11 +35,27 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setAvatar(file);
       setAvatarPreview(URL.createObjectURL(file));
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      try {
+        const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.secure_url) {
+          setProfile((p) => ({ ...p, avatarUrl: data.secure_url }));
+        }
+      } catch (err) {
+        // Optionally show notification
+      }
     }
   };
 
