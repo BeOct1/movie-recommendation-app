@@ -8,7 +8,6 @@ const favoritesRouter = require('./routes/favorites');
 const watchlistsRouter = require('./routes/watchlists');
 const reviewsRouter = require('./routes/reviews');
 const profileRouter = require('./routes/profile');
-const { connectToDatabase, getDb } = require('./db');
 
 // Load environment variables
 dotenv.config();
@@ -26,18 +25,6 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-
-let db;
-
-(async () => {
-  try {
-    db = await connectToDatabase();
-    console.log('Connected to MongoDB');
-  } catch (err) {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  }
-})();
 
 // Registration route
 app.post('/api/auth/register', async (req, res) => {

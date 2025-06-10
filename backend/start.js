@@ -1,10 +1,10 @@
 // Separate entry point to start the server in production or development
 const app = require('./server');
-const { client, connectMongo } = require('./server'); // Export these from server.js
+const { connectToDatabase } = require('./db');
 
 const PORT = process.env.PORT || 5000;
 
-connectMongo().then(() => {
+connectToDatabase().then(() => {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
