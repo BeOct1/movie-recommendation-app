@@ -84,3 +84,229 @@ footer {
   background: transparent;
   color: #bbb;
 }
+
+/* Modern Netflix-style header */
+.modern-header {
+  background: #181926;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 0.5rem 0;
+  margin-bottom: 24px;
+}
+.modern-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  margin-right: 8px;
+}
+.modern-title {
+  font-weight: 800;
+  font-size: 28px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+.modern-nav .btn-link {
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-left: 8px;
+}
+.modern-nav .btn-link:hover {
+  color: #ffc107;
+}
+
+/* Hero Section */
+.modern-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  background: linear-gradient(135deg, #23243a 0%, #181926 100%);
+  padding: 2rem 0;
+}
+.modern-hero-card {
+  position: relative;
+  background: #23243a;
+  border-radius: 2.5rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  overflow: hidden;
+  width: 95vw;
+  max-width: 900px;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.modern-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: url('https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg') center/cover no-repeat;
+  opacity: 0.7;
+  z-index: 1;
+}
+.modern-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 2.5rem 2rem 2rem 2rem;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.modern-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.modern-netflix {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e50914;
+  margin-right: 1.5rem;
+}
+.modern-hero-nav span {
+  margin: 0 0.7rem;
+  color: #fff;
+  opacity: 0.8;
+  cursor: pointer;
+}
+.modern-hero-login {
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.modern-hero-login:hover {
+  color: #ffc107;
+}
+.modern-hero-main {
+  margin-bottom: 1.5rem;
+}
+.modern-hero-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.modern-hero-meta {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.7rem;
+  color: #ffc107;
+}
+.modern-hero-desc {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  margin-bottom: 1.2rem;
+}
+.modern-hero-buttons {
+  display: flex;
+  gap: 1.2rem;
+}
+.modern-hero-play, .modern-hero-trailer {
+  padding: 0.8rem 2.2rem;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.modern-hero-play {
+  background: #2563eb;
+  color: #fff;
+}
+.modern-hero-play:hover {
+  background: #1d4ed8;
+}
+.modern-hero-trailer {
+  background: #fff;
+  color: #23243a;
+}
+.modern-hero-trailer:hover {
+  background: #ffc107;
+  color: #23243a;
+}
+.modern-hero-cast {
+  margin-top: 1.5rem;
+}
+.modern-hero-cast-list {
+  display: flex;
+  gap: 0.7rem;
+  margin: 0.7rem 0;
+}
+.modern-hero-cast-list img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+.modern-hero-cast-names {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 0.98rem;
+  color: #fff;
+  opacity: 0.85;
+  flex-wrap: wrap;
+}
+
+/* Auth Modal */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(24, 25, 38, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-modal-card {
+  background: #23243a;
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  color: #fff;
+  padding: 2.5rem 2rem 2rem 2rem;
+  position: relative;
+  min-width: 320px;
+  max-width: 500px;
+  width: 100%;
+}
+.auth-modal-close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 700px) {
+  .modern-hero-card {
+    min-height: 340px;
+    padding: 0;
+  }
+  .modern-hero-content {
+    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+  }
+  .modern-hero-title {
+    font-size: 2rem;
+  }
+  .modern-hero-meta {
+    font-size: 0.98rem;
+  }
+  .modern-hero-cast-list img {
+    width: 36px;
+    height: 36px;
+  }
+  .auth-modal-card {
+    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+    min-width: 0;
+    max-width: 98vw;
+  }
+}
