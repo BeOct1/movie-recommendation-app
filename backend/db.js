@@ -9,10 +9,7 @@ if (!uri) {
   throw new Error('MONGODB_URI not set in environment variables');
 }
 
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = new MongoClient(uri); // Removed deprecated options
 
 let db;
 
