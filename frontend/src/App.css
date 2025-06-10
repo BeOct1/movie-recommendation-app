@@ -285,6 +285,40 @@ footer {
   z-index: 10;
 }
 
+/* Show/Hide Password Button */
+.show-password-btn {
+  position: absolute;
+  top: 50%;
+  right: 1.2rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #ffc107;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0 0.5rem;
+}
+.show-password-btn:focus {
+  outline: 2px solid #ffc107;
+}
+
+/* Focus and hover improvements */
+input:focus, button:focus, .btn:focus {
+  outline: 2px solid #ffc107 !important;
+  box-shadow: 0 0 0 2px #ffc10733 !important;
+}
+button:active, .btn:active {
+  filter: brightness(0.95);
+}
+
+/* Loading button state */
+button[disabled], .btn[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* Responsive adjustments */
 @media (max-width: 700px) {
   .modern-hero-card {

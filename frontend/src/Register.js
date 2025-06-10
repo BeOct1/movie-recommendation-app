@@ -5,6 +5,8 @@ function Register() {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
 
   const handleChange = e => {
@@ -26,6 +28,7 @@ function Register() {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
+    setLoading(true);
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/register`, {
         method: 'POST',
@@ -34,6 +37,7 @@ function Register() {
         credentials: 'include',
       });
       const data = await res.json();
+      setLoading(false);
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
         login(data.user || {}, data.token);
@@ -43,12 +47,14 @@ function Register() {
       }
     } catch (err) {
       setMessage('Server error');
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="needs-validation" noValidate style={{ gap: 24, display: 'flex', flexDirection: 'column' }}>
+    <form onSubmit={handleSubmit} className="needs-validation" noValidate style={{ gap: 24, display: 'flex', flexDirection: 'column' }} aria-label="Registration Form">
       <div className="form-floating mb-3">
+        <label htmlFor="registerUsername" className="form-label">Username</label>
         <input
           className={`form-control rounded-3${errors.username ? ' is-invalid' : ''}`}
           id="registerUsername"
@@ -57,11 +63,12 @@ function Register() {
           value={form.username}
           onChange={handleChange}
           required
+          autoComplete="username"
         />
-        <label htmlFor="registerUsername">Username</label>
-        {errors.username && <div className="invalid-feedback">{errors.username}</div>}
+        {errors.username && <div className="invalid-feedback" aria-live="polite">{errors.username}</div>}
       </div>
       <div className="form-floating mb-3">
+        <label htmlFor="registerEmail" className="form-label">Email</label>
         <input
           className={`form-control rounded-3${errors.email ? ' is-invalid' : ''}`}
           id="registerEmail"
@@ -71,26 +78,30 @@ function Register() {
           value={form.email}
           onChange={handleChange}
           required
+          autoComplete="email"
         />
-        <label htmlFor="registerEmail">Email address</label>
-        {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+        {errors.email && <div className="invalid-feedback" aria-live="polite">{errors.email}</div>}
       </div>
-      <div className="form-floating mb-3">
+      <div className="form-floating mb-3 position-relative">
+        <label htmlFor="registerPassword" className="form-label">Password</label>
         <input
           className={`form-control rounded-3${errors.password ? ' is-invalid' : ''}`}
           id="registerPassword"
           name="password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
           required
+          autoComplete="new-password"
         />
-        <label htmlFor="registerPassword">Password</label>
-        {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+        <button type="button" className="show-password-btn" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)} tabIndex={0}>
+          {showPassword ? 'Hide' : 'Show'}
+        </button>
+        {errors.password && <div className="invalid-feedback" aria-live="polite">{errors.password}</div>}
       </div>
-      <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ fontSize: 18, borderRadius: 24, transition: 'box-shadow 0.3s' }}>Register</button>
-      {message && <div className="alert alert-info mt-3">{message}</div>}
+      <button className="btn btn-warning w-100 py-2 fw-bold" type="submit" style={{ fontSize: 18, borderRadius: 24, transition: 'box-shadow 0.3s' }} disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
+      {message && <div className="alert alert-info mt-3" aria-live="polite">{message}</div>}
     </form>
   );
 }
