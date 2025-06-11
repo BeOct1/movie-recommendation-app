@@ -450,7 +450,7 @@ button[disabled], .btn[disabled] {
   filter: brightness(0.97);
 }
 .cinema-bg {
-  background: url('./assets/cinema-bg.jpg') center center/cover no-repeat fixed;
+  background: none;
   min-height: 100vh;
   width: 100vw;
 }
