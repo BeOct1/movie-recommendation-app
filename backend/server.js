@@ -31,7 +31,8 @@ app.use(cors({
     'https://movie-recommendation-fu9npnm5g-edwards-projects-0bb04786.vercel.app',
     'https://tangerine-lollipop-a24f3d.netlify.app',
     'http://localhost:3000',
-    'http://localhost:5000'
+    'http://localhost:5000',
+    'https://frontend-roan-kappa-95.vercel.app'
   ],
   credentials: true
 }));

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, WhatsappIcon } from 'react-share';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
+const API_URL = 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
 function Recommendations() {
   const [movies, setMovies] = useState([]);
