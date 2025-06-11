@@ -86,7 +86,8 @@ function MainApp() {
   const renderHero = () => (
     <section className="modern-hero">
       <div className="modern-hero-card">
-        <div className="modern-hero-bg" />
+        {/* Removed the background image and cast images as requested */}
+        <div className="modern-hero-bg" style={{ background: 'none' }} />
         <div className="modern-hero-content">
           <div className="modern-hero-top">
             <span className="modern-netflix">N</span>
@@ -113,12 +114,7 @@ function MainApp() {
           <div className="modern-hero-cast">
             <span>Posters</span>
             <div className="modern-hero-cast-list">
-              {/* Example avatars, replace with real data if available */}
-              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cast" />
-              <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Cast" />
-              <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Cast" />
-              <img src="https://randomuser.me/api/portraits/women/46.jpg" alt="Cast" />
-              <img src="https://randomuser.me/api/portraits/men/47.jpg" alt="Cast" />
+              {/* Removed cast images */}
             </div>
             <div className="modern-hero-cast-names">
               <span>Timothée Chalamet</span>
