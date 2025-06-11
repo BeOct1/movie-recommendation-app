@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { getDb } = require('./db');
 const moviesRouter = require('./routes/movies');
 const favoritesRouter = require('./routes/favorites');
 const watchlistsRouter = require('./routes/watchlists');
@@ -43,6 +44,7 @@ app.post('/api/auth/register', async (req, res) => {
     res.status(500).json({ message: 'Server error.' });
   }
 });
+
 
 // Login route
 app.post('/api/auth/login', async (req, res) => {
