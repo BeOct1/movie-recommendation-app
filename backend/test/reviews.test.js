@@ -1,43 +1,62 @@
-jest.setTimeout(20000);
 const request = require('supertest');
-const { client } = require('../server');
 const app = require('../server');
+const { getDb } = require('../db');
+const jwt = require('jsonwebtoken');
+
+let token;
+let testUserId;
+let testReviewId;
+let testMovieId = 'test-movie-789';
 
 beforeAll(async () => {
-  // Clean up users and reviews collections before tests
-  await client.db().collection('users').deleteMany({});
-  await client.db().collection('reviews').deleteMany({});
+  const usersCol = getDb().collection('users');
+  const result = await usersCol.insertOne({ username: 'revtestuser', password: 'hashedpassword' });
+  testUserId = result.insertedId;
+  token = jwt.sign({ userId: testUserId.toString(), username: 'revtestuser' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 });
 
 afterAll(async () => {
-  // Clean up after tests
-  await client.db().collection('users').deleteMany({});
-  await client.db().collection('reviews').deleteMany({});
-  // Do not close client here to avoid teardown errors
+  const usersCol = getDb().collection('users');
+  await usersCol.deleteOne({ _id: testUserId });
+  const reviewsCol = getDb().collection('reviews');
+  if (testReviewId) {
+    await reviewsCol.deleteOne({ _id: testReviewId });
+  }
 });
 
 describe('Reviews API', () => {
-  let token;
-  beforeAll(async () => {
-    await request(app).post('/api/auth/register').send({ username: 'reviewuser', password: 'reviewpass' });
-    const res = await request(app).post('/api/auth/login').send({ username: 'reviewuser', password: 'reviewpass' });
-    token = res.body.token;
-  });
-
-  it('should add a review', async () => {
+  test('Add a review', async () => {
     const res = await request(app)
       .post('/api/reviews')
       .set('Authorization', `Bearer ${token}`)
-      .send({ movieId: '456', rating: 8, comment: 'Great!' });
+      .send({ movieId: testMovieId, rating: 8, comment: 'Great movie!' });
     expect(res.statusCode).toBe(201);
-    expect(res.body.rating).toBe(8);
+    expect(res.body.movieId).toBe(testMovieId);
+    testReviewId = res.body._id;
   });
 
-  it('should get user reviews', async () => {
+  test('Get reviews for a movie', async () => {
     const res = await request(app)
-      .get('/api/reviews/user/reviewuser')
-      .set('Authorization', `Bearer ${token}`);
+      .get(`/api/reviews/${testMovieId}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some(r => r._id === testReviewId)).toBe(true);
+  });
+
+  test('Edit a review', async () => {
+    const res = await request(app)
+      .put(`/api/reviews/${testReviewId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rating: 9, comment: 'Updated review' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.rating).toBe(9);
+  });
+
+  test('Delete a review', async () => {
+    const res = await request(app)
+      .delete(`/api/reviews/${testReviewId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe('Review deleted');
   });
 });

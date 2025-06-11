@@ -1,43 +1,50 @@
-jest.setTimeout(20000);
 const request = require('supertest');
-const { client } = require('../server');
 const app = require('../server');
+const { getDb } = require('../db');
+const jwt = require('jsonwebtoken');
+
+let token;
+let testUserId;
+let testMovieId = 'test-movie-123';
 
 beforeAll(async () => {
-  // Clean up users and favorites collections before tests
-  await client.db().collection('users').deleteMany({});
-  await client.db().collection('favorites').deleteMany({});
+  const usersCol = getDb().collection('users');
+  const result = await usersCol.insertOne({ username: 'favtestuser', password: 'hashedpassword' });
+  testUserId = result.insertedId;
+  token = jwt.sign({ userId: testUserId.toString(), username: 'favtestuser' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 });
 
 afterAll(async () => {
-  // Clean up after tests
-  await client.db().collection('users').deleteMany({});
-  await client.db().collection('favorites').deleteMany({});
-  // Do not close client here to avoid teardown errors
+  const usersCol = getDb().collection('users');
+  await usersCol.deleteOne({ _id: testUserId });
+  const favoritesCol = getDb().collection('favorites');
+  await favoritesCol.deleteMany({ user: testUserId });
 });
 
 describe('Favorites API', () => {
-  let token;
-  beforeAll(async () => {
-    await request(app).post('/api/auth/register').send({ username: 'favuser', password: 'favpass' });
-    const res = await request(app).post('/api/auth/login').send({ username: 'favuser', password: 'favpass' });
-    token = res.body.token;
-  });
-
-  it('should add a favorite', async () => {
+  test('Add a favorite', async () => {
     const res = await request(app)
       .post('/api/favorites')
       .set('Authorization', `Bearer ${token}`)
-      .send({ movieId: '123', title: 'Test Movie' });
+      .send({ movieId: testMovieId, title: 'Test Movie', posterPath: 'http://example.com/poster.jpg' });
     expect(res.statusCode).toBe(201);
-    expect(res.body.title).toBe('Test Movie');
+    expect(res.body.movieId).toBe(testMovieId);
   });
 
-  it('should get favorites', async () => {
+  test('Get favorites', async () => {
     const res = await request(app)
       .get('/api/favorites')
       .set('Authorization', `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some(fav => fav.movieId === testMovieId)).toBe(true);
+  });
+
+  test('Remove a favorite', async () => {
+    const res = await request(app)
+      .delete(`/api/favorites/${testMovieId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe('Favorite removed');
   });
 });

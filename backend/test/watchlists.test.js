@@ -1,43 +1,55 @@
-jest.setTimeout(20000);
 const request = require('supertest');
-const { client } = require('../server');
 const app = require('../server');
+const { getDb } = require('../db');
+const jwt = require('jsonwebtoken');
+
+let token;
+let testUserId;
+let testWatchlistId;
+let testMovie = { movieId: 'test-movie-456', title: 'Watchlist Movie', posterPath: 'http://example.com/poster2.jpg' };
 
 beforeAll(async () => {
-  // Clean up users and reviews collections before tests
-  await client.db().collection('users').deleteMany({});
-  await client.db().collection('reviews').deleteMany({});
+  const usersCol = getDb().collection('users');
+  const result = await usersCol.insertOne({ username: 'wltestuser', password: 'hashedpassword' });
+  testUserId = result.insertedId;
+  token = jwt.sign({ userId: testUserId.toString(), username: 'wltestuser' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 });
 
 afterAll(async () => {
-  // Clean up after tests
-  await client.db().collection('users').deleteMany({});
-  await client.db().collection('reviews').deleteMany({});
-  // Do not close client here to avoid teardown errors
+  const usersCol = getDb().collection('users');
+  await usersCol.deleteOne({ _id: testUserId });
+  const watchlistsCol = getDb().collection('watchlists');
+  if (testWatchlistId) {
+    await watchlistsCol.deleteOne({ _id: testWatchlistId });
+  }
 });
 
-describe('Reviews API', () => {
-  let token;
-  beforeAll(async () => {
-    await request(app).post('/api/auth/register').send({ username: 'reviewuser', password: 'reviewpass' });
-    const res = await request(app).post('/api/auth/login').send({ username: 'reviewuser', password: 'reviewpass' });
-    token = res.body.token;
-  });
-
-  it('should create a review', async () => {
+describe('Watchlists API', () => {
+  test('Create a watchlist', async () => {
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/watchlists')
       .set('Authorization', `Bearer ${token}`)
-      .send({ movieId: '123', content: 'Great movie!', rating: 5 });
+      .send({ name: 'My Watchlist' });
     expect(res.statusCode).toBe(201);
-    expect(res.body.content).toBe('Great movie!');
+    expect(res.body.name).toBe('My Watchlist');
+    testWatchlistId = res.body._id;
   });
 
-  it('should get reviews', async () => {
+  test('Add movie to watchlist', async () => {
     const res = await request(app)
-      .get('/api/reviews')
+      .post(`/api/watchlists/${testWatchlistId}/movies`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(testMovie);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.movies.some(m => m.movieId === testMovie.movieId)).toBe(true);
+  });
+
+  test('Get all watchlists', async () => {
+    const res = await request(app)
+      .get('/api/watchlists')
       .set('Authorization', `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some(wl => wl._id === testWatchlistId)).toBe(true);
   });
 });
