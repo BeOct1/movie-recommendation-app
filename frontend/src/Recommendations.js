@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, FacebookIcon, TwitterIcon, WhatsappIcon } from 'react-share';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://movie-recommendation-app-backend-equ7.onrender.com';
 
@@ -31,22 +32,32 @@ function Recommendations() {
     <div className="container mt-4">
       <h2>Recommended Movies</h2>
       <div className="recommendations-grid" role="list" aria-label="Recommended Movies">
-        {movies.map(movie => (
-          <div
-            className="recommendation-card"
-            key={movie._id || movie.id}
-            role="listitem"
-            tabIndex={0}
-            aria-label={`Recommended movie: ${movie.title}`}
-          >
-            {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className="card-img-top" style={{width: '100px'}} />}
-            <div className="card-body">
-              <h5 className="card-title">{movie.title} <small className="text-muted">({movie.year || movie.release_date ? (movie.year || movie.release_date.substring(0, 4)) : 'N/A'})</small></h5>
-              {movie.genre && <div>{movie.genre}</div>}
-              {movie.description && <p className="card-text">{movie.description}</p>}
+        {movies.map(movie => {
+          const shareUrl = window.location.origin + `/movie/${movie._id || movie.id}`;
+          return (
+            <div
+              className="recommendation-card"
+              key={movie._id || movie.id}
+              role="listitem"
+              tabIndex={0}
+              aria-label={`Recommended movie: ${movie.title}`}
+            >
+              {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className="card-img-top" style={{width: '100px'}} />}
+              <div className="card-body">
+                <h5 className="card-title">{movie.title} <small className="text-muted">({movie.year || movie.release_date ? (movie.year || movie.release_date.substring(0, 4)) : 'N/A'})</small></h5>
+                {movie.genre && <div>{movie.genre}</div>}
+                {movie.description && <p className="card-text">{movie.description}</p>}
+                <div className="d-flex gap-2 mt-2 align-items-center">
+                  <span>Share:</span>
+                  <FacebookShareButton url={shareUrl}><FacebookIcon size={24} round /></FacebookShareButton>
+                  <TwitterShareButton url={shareUrl}><TwitterIcon size={24} round /></TwitterShareButton>
+                  <WhatsappShareButton url={shareUrl}><WhatsappIcon size={24} round /></WhatsappShareButton>
+                  <button className="btn btn-outline-secondary btn-sm" onClick={() => {navigator.clipboard.writeText(shareUrl)}}>Copy Link</button>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <style>{`
           .recommendations-grid {
             display: grid;

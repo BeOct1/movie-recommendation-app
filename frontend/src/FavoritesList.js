@@ -13,7 +13,7 @@ function FavoritesList() {
   const fetchFavorites = async () => {
     setLoading(true);
     try {
-      const res = await fetch(\`\${API_URL}/api/favorites\`, {
+      const res = await fetch(`${API_URL}/api/favorites`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to fetch favorites');
@@ -28,7 +28,7 @@ function FavoritesList() {
 
   const removeFavorite = async (movieId) => {
     try {
-      const res = await fetch(\`\${API_URL}/api/favorites/\${movieId}\`, {
+      const res = await fetch(`${API_URL}/api/favorites/${movieId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
