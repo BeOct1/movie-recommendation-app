@@ -145,7 +145,7 @@ function MainApp() {
   }
 
   return (
-    <div className="app-bg cinema-bg min-vh-100 d-flex flex-column">
+    <div className="app-bg min-vh-100 d-flex flex-column">
       {renderHeader()}
       <main className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
         {view === 'home' && renderHero()}
