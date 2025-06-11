@@ -51,7 +51,7 @@ function MainApp() {
       <div className="container d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-2">
           <img src="/favicon.ico" alt="Logo" className="modern-logo" />
-          <span className="modern-title">Movie Recommendations App</span>
+          <span className="modern-title"> Movie Recommendations App |By Bitrus Edward</span>
         </div>
         <nav className="modern-nav">
           {isAuthenticated ? (
