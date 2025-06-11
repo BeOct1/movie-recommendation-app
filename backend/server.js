@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 const { getDb } = require('./db');
 const moviesRouter = require('./routes/movies');
 const favoritesRouter = require('./routes/favorites');
@@ -12,6 +15,16 @@ const profileRouter = require('./routes/profile');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(helmet());
+app.use(limiter);
 
 app.use(cors({
   origin: [
@@ -23,6 +36,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Registration route
 app.post('/api/auth/register', async (req, res) => {
@@ -95,6 +109,44 @@ app.use('/api/profile', profileRouter);
 
 app.get('/', (req, res) => {
   res.send('Express server is running!');
+});
+
+// Refresh token endpoint
+app.post('/api/auth/refresh', async (req, res) => {
+  const refreshToken = req.cookies ? req.cookies.refreshToken : null;
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'No refresh token' });
+  }
+  try {
+    const usersCol = getDb().collection('users');
+    const user = await usersCol.findOne({ refreshTokens: refreshToken });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+    const accessToken = jwt.sign(
+      { userId: user._id.toString(), username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.json({ token: accessToken });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Logout endpoint
+app.post('/api/auth/logout', async (req, res) => {
+  const refreshToken = req.cookies ? req.cookies.refreshToken : null;
+  if (refreshToken) {
+    try {
+      const usersCol = getDb().collection('users');
+      await usersCol.updateOne({ refreshTokens: refreshToken }, { $pull: { refreshTokens: refreshToken } });
+      res.clearCookie('refreshToken');
+    } catch (err) {
+      return res.status(500).json({ message: 'Server error' });
+    }
+  }
+  res.json({ message: 'Logged out' });
 });
 
 // Deployment best practices:

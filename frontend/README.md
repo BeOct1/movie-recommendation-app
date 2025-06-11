@@ -68,3 +68,34 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Manual Testing Instructions for Authentication Flows
+
+### Registration
+- Navigate to the registration page.
+- Enter valid username, email, and password (minimum 6 characters).
+- Submit the form and verify successful registration message.
+- Try submitting with missing or invalid fields and verify validation errors.
+
+### Login
+- Navigate to the login page.
+- Enter valid email and password.
+- Submit the form and verify successful login and token storage.
+- Try invalid credentials and verify error messages.
+
+### Token Refresh
+- The app automatically refreshes tokens using refresh tokens stored in cookies.
+- To test manually, simulate token expiration and verify the app requests a new access token.
+
+### Logout
+- Use the logout button or link.
+- Verify the session is cleared and user is redirected to the login page.
+
+### Browsers and Devices
+- Test the above flows on all major browsers (Chrome, Firefox, Edge, Safari).
+- Test on desktop and mobile devices to ensure responsiveness and functionality.
+
+## Automated Testing
+- Automated tests for registration and login flows are located in `frontend/src/__tests__/auth.test.js`.
+- Run tests using `npm test` or `yarn test` in the frontend directory.
+- These tests cover form validation, successful submissions, and error handling.
